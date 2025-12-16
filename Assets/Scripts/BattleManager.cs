@@ -466,7 +466,9 @@ public class BattleManager : MonoBehaviour
             // 3) 经验/升级：默认“全队都加经验”
             if (playerWin)
             {
-                int expGain = 10 + enemies.Count * 5;
+                int baseExp = GameSession.I != null ? GameSession.I.expPerEnemy : 5;
+                int expGain = 10 + enemies.Count * baseExp;
+
                 for (int i = 0; i < players.Count; i++)
                     GameSession.I.GrantWinExp(i, expGain);
 

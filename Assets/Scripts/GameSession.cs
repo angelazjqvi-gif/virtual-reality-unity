@@ -11,6 +11,10 @@ public class GameSession : MonoBehaviour
     public bool playerWon = false;
     public bool playerLost = false;
 
+    [Header("Battle Reward From World")]
+    public int expPerEnemy = 5;
+
+
     void Awake()
     {
         if (I != null) { Destroy(gameObject); return; }

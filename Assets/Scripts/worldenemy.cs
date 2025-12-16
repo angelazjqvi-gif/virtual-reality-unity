@@ -7,7 +7,11 @@ public class WorldEnemy : MonoBehaviour
     public float reTeleportCooldown = 3f;
 
     [Header("ID (set in Inspector, unique)")]
-    public int enemyId = 1; 
+    public int enemyId = 1;
+
+    [Header("Battle Reward")]
+    public int expPerEnemy = 5;   
+
 
     float nextCanBattleTime = 0f;
 
@@ -17,6 +21,8 @@ public class WorldEnemy : MonoBehaviour
         if (Time.time < nextCanBattleTime) return;
 
         GameSession.I.BeginBattle(enemyId);
+        GameSession.I.expPerEnemy = expPerEnemy;
+
         SceneManager.LoadScene(battleSceneName);
     }
 
