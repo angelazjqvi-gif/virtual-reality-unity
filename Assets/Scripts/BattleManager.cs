@@ -70,17 +70,29 @@ public class BattleManager : MonoBehaviour
     void Start()
     {
         if (worldCamera == null) worldCamera = Camera.main;
+        BindPlayerButtons();
+        RebuildAllUnits();
         if (GameSession.I != null)
         {
             GameSession.I.EnsurePartySize(players.Count);
             for (int i = 0; i < players.Count; i++)
             {
-                if (players[i] != null && players[i].unit != null)
-                    GameSession.I.ApplyToBattleUnit(players[i].unit, i);
+                if (players[i] == null || players[i].unit == null)
+                    continue;
+
+                var pd = GameSession.I.GetPlayerDataByIndex(i);
+
+                players[i].unit.OverrideStats(
+                    pd.baseMaxHp,
+                    pd.currentHp,
+                    pd.baseAtk,
+                    pd.baseDef,
+                    pd.baseSpd,
+                    pd.baseCr,
+                    pd.baseCd
+                );
             }
         }
-        BindPlayerButtons();
-        RebuildAllUnits();
         BuildSpeedQueueNewRound();
         AdvanceToNextActor();
     }

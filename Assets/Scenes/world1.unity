@@ -893,6 +893,62 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[0].level
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[1].level
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[0].baseCd
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[0].baseCr
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[1].baseCd
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[1].baseCr
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[0].baseAtk
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[0].baseSpd
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[1].baseAtk
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[1].baseSpd
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[0].baseMaxHp
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[0].currentHp
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[1].baseMaxHp
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
+      propertyPath: party.Array.data[1].currentHp
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
       propertyPath: party.Array.data[0].playerName
       value: player1
       objectReference: {fileID: 0}

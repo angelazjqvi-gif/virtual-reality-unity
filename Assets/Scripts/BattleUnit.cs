@@ -60,4 +60,19 @@ public class BattleUnit : MonoBehaviour
         if (destroyOnDeath) Destroy(gameObject);
         else gameObject.SetActive(false);
     }
+
+    public void OverrideStats(
+    int _maxHp, int _hp,
+    int _atk, int _def, int _spd,
+    float _cr, float _cd
+)
+    {
+        maxHp = _maxHp;
+        hp = Mathf.Clamp(_hp, 0, _maxHp);
+        atk = _atk;
+        def = _def;
+        spd = _spd;
+        cr = _cr;
+        cd = _cd;
+    }
 }
