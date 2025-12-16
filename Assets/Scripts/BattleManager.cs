@@ -70,7 +70,15 @@ public class BattleManager : MonoBehaviour
     void Start()
     {
         if (worldCamera == null) worldCamera = Camera.main;
-
+        if (GameSession.I != null)
+        {
+            GameSession.I.EnsurePartySize(players.Count);
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i] != null && players[i].unit != null)
+                    GameSession.I.ApplyToBattleUnit(players[i].unit, i);
+            }
+        }
         BindPlayerButtons();
         RebuildAllUnits();
         BuildSpeedQueueNewRound();
@@ -428,6 +436,31 @@ public class BattleManager : MonoBehaviour
         state = TurnState.End;
         RefreshButtons();
         yield return new WaitForSeconds(0.15f);
+        if (GameSession.I != null)
+        {
+            GameSession.I.EnsurePartySize(players.Count);
+
+            // 1) 回写每个玩家的当前血量（战斗扣血 -> 主世界同步用）
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i] != null && players[i].unit != null)
+                    GameSession.I.CaptureFromBattleUnit(players[i].unit, i);
+            }
+
+            // 2) 记录胜负
+            if (playerWin) GameSession.I.EndBattle_PlayerWin();
+            else GameSession.I.EndBattle_PlayerLose();
+
+            // 3) 经验/升级：默认“全队都加经验”
+            if (playerWin)
+            {
+                int expGain = 10 + enemies.Count * 5;
+                for (int i = 0; i < players.Count; i++)
+                    GameSession.I.GrantWinExp(i, expGain);
+
+                Debug.Log($"[BattleManager] Win -> partyExpGain={expGain} (players={players.Count})");
+            }
+        }
         SceneManager.LoadScene(worldSceneName);
     }
 

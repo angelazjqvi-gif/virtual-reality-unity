@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+
 
 public class WorldManager : MonoBehaviour
 {
     [Header("Scene Names")]
     public string worldSceneName = "world1";
+    [Header("World Players (same order as BattleManager.players)")]
+    public List<GameObject> worldPlayers = new List<GameObject>();
 
     void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
     void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -44,6 +48,21 @@ public class WorldManager : MonoBehaviour
         {
             Debug.Log("[WorldManager] Player lost, apply cooldown to enemy: " + target.name);
             target.ApplyPlayerLoseCooldown();
+        }
+        // ✅多人：把 party[i] 同步到主世界每个角色（血量/等级带来的基础属性也写回）
+        if (worldPlayers != null && worldPlayers.Count > 0)
+        {
+            GameSession.I.EnsurePartySize(worldPlayers.Count);
+
+            for (int i = 0; i < worldPlayers.Count; i++)
+            {
+                if (worldPlayers[i] != null)
+                    GameSession.I.ApplyToWorldPlayer(worldPlayers[i], i);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[WorldManager] worldPlayers list is empty. 请在Inspector按顺序拖入主世界角色对象（顺序必须与BattleManager.players一致）");
         }
 
         GameSession.I.ClearBattleLink();
