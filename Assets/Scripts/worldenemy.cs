@@ -10,8 +10,12 @@ public class WorldEnemy : MonoBehaviour
     public int enemyId = 1;
 
     [Header("Battle Reward")]
-    public int expPerEnemy = 5;   
+    public int expPerEnemy = 5;
 
+    [Header("World Display")]
+    public int enemyLevel = 1;
+
+    public EnemyRank enemyRank = EnemyRank.Normal;
 
     float nextCanBattleTime = 0f;
 
@@ -30,4 +34,11 @@ public class WorldEnemy : MonoBehaviour
     {
         nextCanBattleTime = Time.time + reTeleportCooldown;
     }
+}
+
+public enum EnemyRank
+{
+    Normal,
+    Elite,
+    Boss
 }
