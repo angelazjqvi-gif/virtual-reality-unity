@@ -38,6 +38,15 @@ public class BattleUnit : MonoBehaviour
     [Header("FX - Ultimate")]
     public GameObject ultimateFxPrefab;
 
+    [Header("Ultimate - Special")]
+    public bool ultimateHealsParty = false;   
+    public int ultimateHealFlat = 15;         
+    public float ultimateHealAtkRatio = 0f;   
+
+    [Header("FX - Ultimate Heal")]
+    public GameObject ultimateHealFxPrefab;   
+
+
     public void TakeDamage(int dmg)
     {
         hp -= dmg;
@@ -73,6 +82,15 @@ public class BattleUnit : MonoBehaviour
         if (destroyOnDeath) Destroy(gameObject);
         else gameObject.SetActive(false);
     }
+
+    public void Heal(int amount)
+    {
+        if (amount <= 0) return;
+        hp += amount;
+        if (hp > maxHp) hp = maxHp;
+        Debug.Log($"{name} heals {amount}, HP={hp}/{maxHp}");
+    }
+
 
     public void OverrideStats(
     int _maxHp, int _hp,

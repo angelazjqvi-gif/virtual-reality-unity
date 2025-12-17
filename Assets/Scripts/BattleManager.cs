@@ -109,7 +109,6 @@ public class BattleManager : MonoBehaviour
 
     void Update()
     {
-        // ✅ Busy 看门狗：任何原因导致 Busy 不退出，都强制推进
         if (state == TurnState.Busy)
         {
             busyTimer += Time.deltaTime;
@@ -118,7 +117,6 @@ public class BattleManager : MonoBehaviour
                 Debug.LogWarning("[WATCHDOG] Busy timeout -> force next turn");
                 busyTimer = 0f;
 
-                // 强制推进：跳过当前卡住的动作
                 queueIndex++;
                 AdvanceToNextActor();
             }
@@ -256,7 +254,6 @@ public class BattleManager : MonoBehaviour
         currentActor = speedQueue[queueIndex];
         Debug.Log($"[TURN] idx={queueIndex}/{speedQueue.Count} next={currentActor.name} isPlayer={currentActor.isPlayer}");
 
-        // ✅ 核心修复：轮到玩家时强制回 WaitingInput（杜绝 boss 死后 Busy 残留）
         if (currentActor.isPlayer)
         {
             state = TurnState.WaitingInput;
@@ -362,6 +359,32 @@ public class BattleManager : MonoBehaviour
         attacker.TriggerUltimate();
         yield return WaitUltimateFinish(attacker);
 
+        if (attacker.ultimateHealsParty)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                var ally = players[i].unit;
+                if (ally == null) continue;
+                if (!IsAlive(ally)) continue;
+
+                int heal = ComputePartyHealAmount(attacker, ally);
+                ally.Heal(heal);
+
+                SpawnDamagePopup(ally, -heal, false);
+
+                if (attacker.ultimateHealFxPrefab != null)
+                {
+                    Transform hit = ally.hitPoint != null ? ally.hitPoint : ally.transform;
+                    StartCoroutine(PlayFxAndWait(attacker.ultimateHealFxPrefab, hit));
+                }
+            }
+
+            queueIndex++;
+            AdvanceToNextActor();
+            yield break;
+        }
+
+
         var r = ComputeUltimateDamage(attacker, target);
         target.TakeDamage(r.dmg);
         SpawnDamagePopup(target, r.dmg, r.crit);
@@ -441,6 +464,14 @@ public class BattleManager : MonoBehaviour
         r.dmg = dmg;
         return r;
     }
+
+    int ComputePartyHealAmount(BattleUnit healer, BattleUnit ally)
+    {
+        int heal = healer.ultimateHealFlat + Mathf.RoundToInt(healer.atk * healer.ultimateHealAtkRatio);
+        if (heal < 1) heal = 1;
+        return heal;
+    }
+
 
     void SpawnDamagePopup(BattleUnit target, int damage, bool crit)
     {
@@ -658,7 +689,6 @@ public class BattleManager : MonoBehaviour
         Destroy(fx);
     }
 
-    // ✅ 关键：死亡流程永不卡死（boss loop / stateName 不匹配 / Animator 异常都兜底）
     IEnumerator PlayDeathAndRemove(BattleUnit unit)
     {
         if (unit == null) yield break;
