@@ -52,17 +52,26 @@ public class BattleManager : MonoBehaviour
     public float busyTimeout = 5f;   
     private float busyTimer = 0f;
 
-    [Header("Wait Safety - Ultimate (NEW)")]
+    [Header("Wait Safety - Ultimate")]
     public float maxWaitEnterUltimate = 0.5f;
     public float maxWaitUltimateTotal = 2.5f;
 
-    [Header("Target Arrow (NEW)")]
+    [Header("Target Arrow")]
     public GameObject targetArrowPrefab;          
     public Vector3 targetArrowWorldOffset = new Vector3(0f, 1.2f, 0f);
     public bool allowClickToSelectEnemy = true;
 
     private GameObject targetArrowInstance = null;
     private BattleUnit arrowTarget = null;
+
+    [Header("Active Player Aura")]
+    public GameObject activePlayerAuraPrefab;        
+    public Vector3 activePlayerAuraOffset = new Vector3(0f, -0.45f, 0f); 
+    public bool auraFollowPlayer = true;
+
+    private GameObject activePlayerAuraInstance = null;
+    private BattleUnit auraOwner = null;
+
 
     private TurnState state = TurnState.WaitingInput;
 
@@ -150,6 +159,7 @@ public class BattleManager : MonoBehaviour
 
         TryMouseSelectEnemy();
         UpdateTargetArrowDuringPlayerInput();
+        UpdateActiveAuraByTurn();
 
     }
 
@@ -195,7 +205,6 @@ public class BattleManager : MonoBehaviour
             if (IsAlive(u)) speedQueue.Add(u);
         }
 
-        // SPD 降序；SPD 相同则随机打散一点
         speedQueue.Sort((a, b) =>
         {
             int cmp = b.spd.CompareTo(a.spd);
@@ -352,6 +361,70 @@ public class BattleManager : MonoBehaviour
         ShowTargetArrowOn(u);
     }
 
+    void EnsureActiveAura()
+    {
+        if (activePlayerAuraInstance != null) return;
+        if (activePlayerAuraPrefab == null) return;
+
+        activePlayerAuraInstance = Instantiate(activePlayerAuraPrefab);
+        activePlayerAuraInstance.SetActive(false);
+
+        var sr = activePlayerAuraInstance.GetComponentInChildren<SpriteRenderer>();
+        if (sr != null) sr.sortingOrder = 0;
+    }
+
+    void HideActiveAura()
+    {
+        if (activePlayerAuraInstance != null)
+            activePlayerAuraInstance.SetActive(false);
+
+        auraOwner = null;
+    }
+
+    void ShowActiveAuraOn(BattleUnit unit)
+    {
+        EnsureActiveAura();
+        if (activePlayerAuraInstance == null) return;
+
+        if (unit == null || !unit.isPlayer || !IsAlive(unit))
+        {
+            HideActiveAura();
+            return;
+        }
+
+        auraOwner = unit;
+        activePlayerAuraInstance.SetActive(true);
+        UpdateActiveAuraPosition();
+    }
+
+    void UpdateActiveAuraPosition()
+    {
+        if (activePlayerAuraInstance == null || !activePlayerAuraInstance.activeSelf) return;
+
+        if (auraOwner == null || !IsAlive(auraOwner) || !auraOwner.isPlayer)
+        {
+            HideActiveAura();
+            return;
+        }
+
+        Vector3 basePos = auraOwner.transform.position;
+        activePlayerAuraInstance.transform.position = basePos + activePlayerAuraOffset;
+    }
+
+    void UpdateActiveAuraByTurn()
+    {
+        if (state == TurnState.WaitingInput && currentActor != null && currentActor.isPlayer && IsAlive(currentActor))
+        {
+            if (auraOwner != currentActor || activePlayerAuraInstance == null || !activePlayerAuraInstance.activeSelf)
+                ShowActiveAuraOn(currentActor);
+            else if (auraFollowPlayer)
+                UpdateActiveAuraPosition();
+        }
+        else
+        {
+            HideActiveAura();
+        }
+    }
 
 
     void AdvanceToNextActor()
@@ -429,6 +502,7 @@ public class BattleManager : MonoBehaviour
     {
         state = TurnState.Busy;
         HideTargetArrow();
+        HideActiveAura();
         busyOwnerToken = token;
         RefreshUI();
 
@@ -488,7 +562,7 @@ public class BattleManager : MonoBehaviour
         }
         state = TurnState.Busy;
         HideTargetArrow();
-
+        HideActiveAura();
         RefreshUI();
 
         BattleUnit target =
@@ -799,7 +873,6 @@ public class BattleManager : MonoBehaviour
 
         yield return null;
 
-        // 进入攻击状态
         float t = 0f;
         while (!unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.attackStateName) && t < maxWaitEnterAttack)
         {
@@ -810,7 +883,6 @@ public class BattleManager : MonoBehaviour
         if (!unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.attackStateName))
             yield break;
 
-        // 等攻击状态结束（兜底超时）
         float t2 = 0f;
         while (unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.attackStateName) && t2 < maxWaitAttackTotal)
         {
@@ -823,7 +895,6 @@ public class BattleManager : MonoBehaviour
     {
         if (unit == null || unit.animator == null) yield break;
 
-        // 没配大招状态名 -> 直接按普攻的等待逻辑兜底
         if (string.IsNullOrEmpty(unit.ultimateStateName))
         {
             yield return WaitAttackFinish(unit);
