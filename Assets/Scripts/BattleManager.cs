@@ -370,7 +370,7 @@ public class BattleManager : MonoBehaviour
                 int heal = ComputePartyHealAmount(attacker, ally);
                 ally.Heal(heal);
 
-                SpawnDamagePopup(ally, -heal, false);
+                SpawnHealPopup(ally, heal);
 
                 if (attacker.ultimateHealFxPrefab != null)
                 {
@@ -508,6 +508,38 @@ public class BattleManager : MonoBehaviour
         popup.Setup(damage, crit); 
         Debug.Log("[POPUP] spawned OK");
     }
+
+    void SpawnHealPopup(BattleUnit target, int heal)
+    {
+        if (damagePopupPrefab == null) { Debug.LogError("[POPUP] damagePopupPrefab = NULL"); return; }
+        if (popupCanvas == null) { Debug.LogError("[POPUP] popupCanvas = NULL"); return; }
+        if (target == null) { Debug.LogError("[POPUP] target = NULL"); return; }
+
+        if (worldCamera == null) worldCamera = Camera.main;
+        if (worldCamera == null) { Debug.LogError("[POPUP] worldCamera = NULL (MainCamera tag?)"); return; }
+
+        Vector3 worldPos = target.transform.position + popupWorldOffset;
+        Vector3 screenPos = worldCamera.WorldToScreenPoint(worldPos);
+        if (screenPos.z < 0f) return;
+
+        DamagePopup popup = Instantiate(damagePopupPrefab, popupCanvas.transform);
+        popup.transform.SetAsLastSibling();
+
+        RectTransform canvasRt = popupCanvas.GetComponent<RectTransform>();
+        RectTransform popupRt = popup.GetComponent<RectTransform>();
+
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRt,
+            screenPos,
+            popupCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : worldCamera,
+            out localPoint
+        );
+        popupRt.anchoredPosition = localPoint;
+
+        popup.SetupHeal(heal);
+    }
+
 
     public void SpawnAttackFxNow(BattleUnit attacker)
     {

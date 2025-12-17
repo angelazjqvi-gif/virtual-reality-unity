@@ -19,26 +19,37 @@ public class DamagePopup : MonoBehaviour
     public float lifeTime = 0.8f;
     public float floatSpeed = 40f;
 
+    [Header("Heal (NEW)")]
+    public Color healColor = Color.green;
+    public float healScale = 1.1f;
+    public string healPrefix = "+";
+
     private float timer;
 
-    // ⭐ 唯一入口
     public void Setup(int damage, bool isCrit)
     {
-        // 1. 文本
         if (isCrit)
             text.text = critPrefix +"-"+ damage;
         else
             text.text = "-" + damage.ToString();
 
-        // 2. 颜色（关键）
         text.color = isCrit ? critColor : normalColor;
 
-        // 3. 缩放
         transform.localScale = Vector3.one * (isCrit ? critScale : normalScale);
 
         timer = 0f;
     }
+    public void SetupHeal(int healAmount)
+    {
+        if (healAmount < 0) healAmount = -healAmount; // 容错
+        if (healAmount < 1) healAmount = 1;
 
+        text.text = healPrefix + healAmount.ToString();
+        text.color = healColor;
+        transform.localScale = Vector3.one * healScale;
+
+        timer = 0f;
+    }
     void Update()
     {
         transform.position += Vector3.up * floatSpeed * Time.deltaTime;
