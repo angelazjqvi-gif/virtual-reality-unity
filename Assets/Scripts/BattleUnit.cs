@@ -22,8 +22,8 @@ public class BattleUnit : MonoBehaviour
 
     [Header("Animator")]
     public Animator animator;
-    public string attackStateName;         // 攻击状态名（Animator State 名）
-    public string deathStateName = "death";// 死亡状态名（Animator State 名）
+    public string attackStateName;         // 攻击状态名
+    public string deathStateName = "death";// 死亡状态名
 
     [Header("FX")]
     public GameObject attackFxPrefab;
@@ -31,6 +31,12 @@ public class BattleUnit : MonoBehaviour
 
     [Header("Death")]
     public bool destroyOnDeath = false;
+
+    [Header("Animator - Ultimate")]
+    public string ultimateStateName;
+
+    [Header("FX - Ultimate")]
+    public GameObject ultimateFxPrefab;
 
     public void TakeDamage(int dmg)
     {
@@ -53,6 +59,13 @@ public class BattleUnit : MonoBehaviour
         if (animator == null) return;
         animator.ResetTrigger("Die");
         animator.SetTrigger("Die");
+    }
+
+    public void TriggerUltimate()
+    {
+        if (animator == null) return;
+        animator.ResetTrigger("Ultimate");
+        animator.SetTrigger("Ultimate");
     }
 
     public void HideOrDestroy()

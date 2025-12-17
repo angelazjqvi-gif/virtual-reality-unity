@@ -13,6 +13,7 @@ public class BattleManager : MonoBehaviour
     {
         public BattleUnit unit;
         public Button attackButton;
+        public Button ultimateButton;
     }
 
     [Header("Players (N)")]
@@ -46,8 +47,12 @@ public class BattleManager : MonoBehaviour
     public Vector3 popupWorldOffset = new Vector3(0f, 1.2f, 0f);
 
     [Header("Watchdog (Anti-freeze)")]
-    public float busyTimeout = 5f;   // ✅ Busy 超时自动推进，彻底杜绝卡死
+    public float busyTimeout = 5f;   
     private float busyTimer = 0f;
+
+    [Header("Wait Safety - Ultimate (NEW)")]
+    public float maxWaitEnterUltimate = 0.5f;
+    public float maxWaitUltimateTotal = 2.5f;
 
     private TurnState state = TurnState.WaitingInput;
 
@@ -58,8 +63,13 @@ public class BattleManager : MonoBehaviour
     private int queueIndex = 0;
     private BattleUnit currentActor = null;
 
-    // 当前行动者锁定的目标（动画事件/特效用）
     private readonly Dictionary<BattleUnit, BattleUnit> lockedTargetForThisAction = new Dictionary<BattleUnit, BattleUnit>();
+    private readonly Dictionary<BattleUnit, GameObject> lockedFxPrefabForThisAction = new Dictionary<BattleUnit, GameObject>();
+
+    [Header("Ultimate Damage")]
+    [Range(1f, 10f)]
+    public float ultimateDamageMultiplier = 2.0f;
+    public int ultimateFlatBonus = 0;
 
     struct DamageResult
     {
@@ -128,6 +138,12 @@ public class BattleManager : MonoBehaviour
 
             players[i].attackButton.onClick.RemoveAllListeners();
             players[i].attackButton.onClick.AddListener(() => OnClickAttack(idx));
+
+            if (players[i].ultimateButton != null)
+            {
+                players[i].ultimateButton.onClick.RemoveAllListeners();
+                players[i].ultimateButton.onClick.AddListener(() => OnClickUltimate(idx));
+            }
         }
     }
 
@@ -189,6 +205,11 @@ public class BattleManager : MonoBehaviour
                 IsAlive(players[i].unit);
 
             btn.interactable = isMyTurn;
+            if (players[i].attackButton != null)
+                players[i].attackButton.interactable = isMyTurn;
+
+            if (players[i].ultimateButton != null)
+                players[i].ultimateButton.interactable = isMyTurn;
         }
     }
 
@@ -265,6 +286,17 @@ public class BattleManager : MonoBehaviour
         StartCoroutine(PlayerAttackFlow(attacker));
     }
 
+    void OnClickUltimate(int playerIndex)
+    {
+        if (state != TurnState.WaitingInput) return;
+        if (playerIndex < 0 || playerIndex >= players.Count) return;
+
+        BattleUnit attacker = players[playerIndex].unit;
+        if (attacker == null || attacker != currentActor) return;
+
+        StartCoroutine(PlayerUltimateFlow(attacker));
+    }
+
     IEnumerator PlayerAttackFlow(BattleUnit attacker)
     {
         state = TurnState.Busy;
@@ -282,6 +314,7 @@ public class BattleManager : MonoBehaviour
         }
 
         lockedTargetForThisAction[attacker] = target;
+        lockedFxPrefabForThisAction[attacker] = attacker.attackFxPrefab;
 
         attacker.TriggerAttack();
         yield return WaitAttackFinish(attacker);
@@ -304,6 +337,51 @@ public class BattleManager : MonoBehaviour
         queueIndex++;
         AdvanceToNextActor();
     }
+
+    IEnumerator PlayerUltimateFlow(BattleUnit attacker)
+    {
+        state = TurnState.Busy;
+        RefreshUI();
+
+        BattleUnit target =
+            (IsAlive(selectedEnemyTarget) && !selectedEnemyTarget.isPlayer)
+            ? selectedEnemyTarget
+            : GetFirstAliveEnemy();
+
+        if (target == null)
+        {
+            yield return EndBattleAndReturn(true);
+            yield break;
+        }
+
+        lockedTargetForThisAction[attacker] = target;
+
+        // ✅ 大招：锁定大招特效（没有配置就回退到普攻特效，保证不报错）
+        GameObject fx = attacker.ultimateFxPrefab != null ? attacker.ultimateFxPrefab : attacker.attackFxPrefab;
+        lockedFxPrefabForThisAction[attacker] = fx;
+
+        attacker.TriggerUltimate();
+        yield return WaitUltimateFinish(attacker);
+
+        var r = ComputeUltimateDamage(attacker, target);
+        target.TakeDamage(r.dmg);
+        SpawnDamagePopup(target, r.dmg, r.crit);
+
+        if (target.IsDead())
+        {
+            yield return PlayDeathAndRemove(target);
+        }
+
+        if (AllEnemiesDead())
+        {
+            yield return EndBattleAndReturn(true);
+            yield break;
+        }
+
+        queueIndex++;
+        AdvanceToNextActor();
+    }
+
 
     IEnumerator EnemyAutoAttackFlow(BattleUnit enemy)
     {
@@ -352,6 +430,17 @@ public class BattleManager : MonoBehaviour
         if (dmg < 1) dmg = 1;
 
         return new DamageResult { dmg = dmg, crit = crit };
+    }
+
+    DamageResult ComputeUltimateDamage(BattleUnit attacker, BattleUnit target)
+    {
+        var r = ComputeDamage(attacker, target);
+
+        int dmg = Mathf.RoundToInt(r.dmg * Mathf.Max(1f, ultimateDamageMultiplier)) + ultimateFlatBonus;
+        if (dmg < 1) dmg = 1;
+
+        r.dmg = dmg;
+        return r;
     }
 
     void SpawnDamagePopup(BattleUnit target, int damage, bool crit)
@@ -403,6 +492,10 @@ public class BattleManager : MonoBehaviour
         }
         if (target == null) return;
 
+        GameObject fxPrefab = null;
+        if (!lockedFxPrefabForThisAction.TryGetValue(attacker, out fxPrefab) || fxPrefab == null)
+            fxPrefab = attacker.attackFxPrefab;
+
         Transform hit = target.hitPoint != null ? target.hitPoint : target.transform;
         StartCoroutine(PlayFxAndWait(attacker.attackFxPrefab, hit));
     }
@@ -452,18 +545,15 @@ public class BattleManager : MonoBehaviour
         {
             GameSession.I.EnsurePartySize(players.Count);
 
-            // 1) 回写每个玩家的当前血量（战斗扣血 -> 主世界同步用）
             for (int i = 0; i < players.Count; i++)
             {
                 if (players[i] != null && players[i].unit != null)
                     GameSession.I.CaptureFromBattleUnit(players[i].unit, i);
             }
 
-            // 2) 记录胜负
             if (playerWin) GameSession.I.EndBattle_PlayerWin();
             else GameSession.I.EndBattle_PlayerLose();
 
-            // 3) 经验/升级：默认“全队都加经验”
             if (playerWin)
             {
                 int baseExp = GameSession.I != null ? GameSession.I.expPerEnemy : 5;
@@ -499,6 +589,37 @@ public class BattleManager : MonoBehaviour
         // 等攻击状态结束（兜底超时）
         float t2 = 0f;
         while (unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.attackStateName) && t2 < maxWaitAttackTotal)
+        {
+            t2 += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    IEnumerator WaitUltimateFinish(BattleUnit unit)
+    {
+        if (unit == null || unit.animator == null) yield break;
+
+        // 没配大招状态名 -> 直接按普攻的等待逻辑兜底
+        if (string.IsNullOrEmpty(unit.ultimateStateName))
+        {
+            yield return WaitAttackFinish(unit);
+            yield break;
+        }
+
+        yield return null;
+
+        float t = 0f;
+        while (!unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.ultimateStateName) && t < maxWaitEnterUltimate)
+        {
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        if (!unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.ultimateStateName))
+            yield break;
+
+        float t2 = 0f;
+        while (unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.ultimateStateName) && t2 < maxWaitUltimateTotal)
         {
             t2 += Time.deltaTime;
             yield return null;
@@ -602,6 +723,13 @@ public class BattleManager : MonoBehaviour
         {
             if (lockedTargetForThisAction.TryGetValue(k, out var tar) && tar == dead)
                 lockedTargetForThisAction.Remove(k);
+        }
+
+        var fxKeys = new List<BattleUnit>(lockedFxPrefabForThisAction.Keys);
+        foreach (var k in fxKeys)
+        {
+            if (lockedFxPrefabForThisAction.ContainsKey(k) && k == dead)
+                lockedFxPrefabForThisAction.Remove(k);
         }
     }
 }
