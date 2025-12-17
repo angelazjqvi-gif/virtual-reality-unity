@@ -46,9 +46,39 @@ public class BattleUnit : MonoBehaviour
     [Header("FX - Ultimate Heal")]
     public GameObject ultimateHealFxPrefab;
 
-    [Header("Energy (NEW)")]
+    [Header("Energy")]
     public float energy = 0f;          
     public float energyMax = 100f;
+
+    [Header("Energy Bar Visual")]
+    public Transform energyBarRoot;               
+    public Transform energyBarFill;               
+    public bool energyBarOnlyForPlayers = true;   
+    public Vector3 energyBarScaleFull = new Vector3(1f, 1f, 1f);
+
+    [Header("Energy Glow")]
+    public bool glowWhenEnergyFull = true;
+    public float glowSpeed = 6f;
+
+
+    private Vector3 energyFillScaleFullRuntime;
+    private bool energyFillScaleInited = false;
+    private Vector3 energyFillPosFullRuntime;
+    private bool energyFillInit = false;
+
+    private SpriteRenderer energyFillRenderer;
+    private bool energyGlowActive;
+
+
+    void Start()
+    {
+        RefreshEnergyBar();
+        if (energyBarFill != null)
+        {
+            energyFillRenderer = energyBarFill.GetComponent<SpriteRenderer>();
+        }
+
+    }
 
 
     public void TakeDamage(int dmg)
@@ -105,6 +135,7 @@ public class BattleUnit : MonoBehaviour
         energy += amount;
         if (energy > energyMax) energy = energyMax;
         if (energy < 0f) energy = 0f;
+        RefreshEnergyBar();
     }
 
     public bool SpendEnergy(float amount)
@@ -112,6 +143,7 @@ public class BattleUnit : MonoBehaviour
         if (energy < amount) return false;
         energy -= amount;
         if (energy < 0f) energy = 0f;
+        RefreshEnergyBar();
         return true;
     }
 
@@ -120,6 +152,58 @@ public class BattleUnit : MonoBehaviour
         if (energyMax <= 0f) return 0f;
         return Mathf.Clamp01(energy / energyMax);
     }
+
+    public void RefreshEnergyBar()
+    {
+        if (energyBarRoot == null || energyBarFill == null) return;
+
+        if (energyBarOnlyForPlayers && !isPlayer)
+        {
+            energyBarRoot.gameObject.SetActive(false);
+            return;
+        }
+        energyBarRoot.gameObject.SetActive(true);
+
+        if (!energyFillInit)
+        {
+            energyFillScaleFullRuntime = energyBarFill.localScale;     
+            energyFillPosFullRuntime = energyBarFill.localPosition;  
+            energyFillInit = true;
+        }
+
+        float t = Energy01(); // 0~1
+        energyGlowActive = glowWhenEnergyFull && t >= 0.999f;
+        energyBarFill.gameObject.SetActive(t > 0.001f);
+        if (t <= 0.001f) return;
+
+        Vector3 s = energyFillScaleFullRuntime;
+        s.x *= t;
+        energyBarFill.localScale = s;
+        Vector3 p = energyFillPosFullRuntime;
+        p.x = energyFillPosFullRuntime.x - (energyFillScaleFullRuntime.x * (1f - t) * 0.5f);
+        energyBarFill.localPosition = p;
+    }
+
+    void Update()
+    {
+        if (energyFillRenderer == null) return;
+
+        if (energyGlowActive)
+        {
+            float t = (Mathf.Sin(Time.time * glowSpeed) + 1f) * 0.5f;
+            energyFillRenderer.color = Color.Lerp(
+                new Color(0.3f, 1f, 0.3f),   
+                Color.white,               
+                t
+            );
+        }
+        else
+        {
+            energyFillRenderer.color = Color.green;
+        }
+    }
+
+
 
     public void OverrideStats(
     int _maxHp, int _hp,

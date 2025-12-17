@@ -253,11 +253,9 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        // 新一轮
         if (queueIndex >= speedQueue.Count)
             BuildSpeedQueueNewRound();
 
-        // 跳过已死
         while (queueIndex < speedQueue.Count && !IsAlive(speedQueue[queueIndex]))
             queueIndex++;
 
@@ -275,7 +273,6 @@ public class BattleManager : MonoBehaviour
         {
             state = TurnState.WaitingInput;
 
-            // 选中的敌人如果死了，清掉
             if (selectedEnemyTarget != null && !IsAlive(selectedEnemyTarget))
                 selectedEnemyTarget = null;
 
@@ -283,7 +280,6 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        // 敌人自动行动
         state = TurnState.Busy;
         busyOwnerToken = turnToken;
         RefreshUI();
