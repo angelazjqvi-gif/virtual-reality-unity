@@ -44,7 +44,11 @@ public class BattleUnit : MonoBehaviour
     public float ultimateHealAtkRatio = 0f;   
 
     [Header("FX - Ultimate Heal")]
-    public GameObject ultimateHealFxPrefab;   
+    public GameObject ultimateHealFxPrefab;
+
+    [Header("Energy (NEW)")]
+    public float energy = 0f;          
+    public float energyMax = 100f;
 
 
     public void TakeDamage(int dmg)
@@ -91,6 +95,31 @@ public class BattleUnit : MonoBehaviour
         Debug.Log($"{name} heals {amount}, HP={hp}/{maxHp}");
     }
 
+    public bool HasFullEnergy()
+    {
+        return energy >= energyMax;
+    }
+
+    public void AddEnergy(float amount)
+    {
+        energy += amount;
+        if (energy > energyMax) energy = energyMax;
+        if (energy < 0f) energy = 0f;
+    }
+
+    public bool SpendEnergy(float amount)
+    {
+        if (energy < amount) return false;
+        energy -= amount;
+        if (energy < 0f) energy = 0f;
+        return true;
+    }
+
+    public float Energy01()
+    {
+        if (energyMax <= 0f) return 0f;
+        return Mathf.Clamp01(energy / energyMax);
+    }
 
     public void OverrideStats(
     int _maxHp, int _hp,

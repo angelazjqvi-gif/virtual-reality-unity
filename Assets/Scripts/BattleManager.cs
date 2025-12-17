@@ -71,6 +71,10 @@ public class BattleManager : MonoBehaviour
     public float ultimateDamageMultiplier = 2.0f;
     public int ultimateFlatBonus = 0;
 
+    [Header("Energy Rules (NEW)")]
+    public float energyGainOnNormalAttack = 50f;   
+    public float energyCostUltimate = 100f;        
+
     struct DamageResult
     {
         public int dmg;
@@ -205,9 +209,11 @@ public class BattleManager : MonoBehaviour
             btn.interactable = isMyTurn;
             if (players[i].attackButton != null)
                 players[i].attackButton.interactable = isMyTurn;
+            bool canUltimate = isMyTurn && players[i].unit != null && players[i].unit.HasFullEnergy();
 
             if (players[i].ultimateButton != null)
-                players[i].ultimateButton.interactable = isMyTurn;
+                players[i].ultimateButton.interactable = canUltimate;
+
         }
     }
 
@@ -320,6 +326,9 @@ public class BattleManager : MonoBehaviour
         target.TakeDamage(r.dmg);
         SpawnDamagePopup(target, r.dmg, r.crit);
 
+        attacker.AddEnergy(energyGainOnNormalAttack); 
+        RefreshUI(); 
+
         if (target.IsDead())
         {
             yield return PlayDeathAndRemove(target);
@@ -337,6 +346,13 @@ public class BattleManager : MonoBehaviour
 
     IEnumerator PlayerUltimateFlow(BattleUnit attacker)
     {
+        if (!attacker.HasFullEnergy())
+        {
+            Debug.LogWarning($"[ULT] {attacker.name} energy not full: {attacker.energy}/{attacker.energyMax}");
+            state = TurnState.WaitingInput;
+            RefreshUI();
+            yield break;
+        }
         state = TurnState.Busy;
         RefreshUI();
 
@@ -359,6 +375,8 @@ public class BattleManager : MonoBehaviour
         attacker.TriggerUltimate();
         yield return WaitUltimateFinish(attacker);
 
+        attacker.SpendEnergy(energyCostUltimate);
+        RefreshUI();
         if (attacker.ultimateHealsParty)
         {
             for (int i = 0; i < players.Count; i++)
