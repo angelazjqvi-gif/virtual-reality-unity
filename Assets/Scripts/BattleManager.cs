@@ -56,6 +56,14 @@ public class BattleManager : MonoBehaviour
     public float maxWaitEnterUltimate = 0.5f;
     public float maxWaitUltimateTotal = 2.5f;
 
+    [Header("Target Arrow (NEW)")]
+    public GameObject targetArrowPrefab;          
+    public Vector3 targetArrowWorldOffset = new Vector3(0f, 1.2f, 0f);
+    public bool allowClickToSelectEnemy = true;
+
+    private GameObject targetArrowInstance = null;
+    private BattleUnit arrowTarget = null;
+
     private TurnState state = TurnState.WaitingInput;
 
     private BattleUnit selectedEnemyTarget = null;
@@ -139,6 +147,10 @@ public class BattleManager : MonoBehaviour
         {
             busyTimer = 0f;
         }
+
+        TryMouseSelectEnemy();
+        UpdateTargetArrowDuringPlayerInput();
+
     }
 
     void BindPlayerButtons()
@@ -237,6 +249,111 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"Selected Target => {enemy.name}");
     }
 
+    void EnsureTargetArrow()
+    {
+        if (targetArrowInstance != null) return;
+        if (targetArrowPrefab == null) return;
+
+        targetArrowInstance = Instantiate(targetArrowPrefab);
+        targetArrowInstance.SetActive(false);
+
+        var sr = targetArrowInstance.GetComponentInChildren<SpriteRenderer>();
+        if (sr != null) sr.sortingOrder = 2000;
+    }
+
+    void HideTargetArrow()
+    {
+        if (targetArrowInstance != null)
+            targetArrowInstance.SetActive(false);
+        arrowTarget = null;
+    }
+
+    void ShowTargetArrowOn(BattleUnit target)
+    {
+        EnsureTargetArrow();
+        if (targetArrowInstance == null) return;
+
+        if (target == null || !IsAlive(target) || target.isPlayer)
+        {
+            HideTargetArrow();
+            return;
+        }
+
+        arrowTarget = target;
+        targetArrowInstance.SetActive(true);
+
+        UpdateTargetArrowPosition();
+    }
+
+    void UpdateTargetArrowPosition()
+    {
+        if (targetArrowInstance == null || !targetArrowInstance.activeSelf) return;
+
+        if (arrowTarget == null || !IsAlive(arrowTarget) || arrowTarget.isPlayer)
+        {
+            HideTargetArrow();
+            return;
+        }
+
+        Vector3 basePos = arrowTarget.transform.position;
+        targetArrowInstance.transform.position = basePos + targetArrowWorldOffset;
+    }
+
+    void UpdateTargetArrowDuringPlayerInput()
+    {
+        if (state != TurnState.WaitingInput || currentActor == null || !currentActor.isPlayer)
+        {
+            HideTargetArrow();
+            return;
+        }
+
+        if (selectedEnemyTarget != null && !IsAlive(selectedEnemyTarget))
+            selectedEnemyTarget = null;
+
+        BattleUnit target =
+            (IsAlive(selectedEnemyTarget) && !selectedEnemyTarget.isPlayer)
+            ? selectedEnemyTarget
+            : GetFirstAliveEnemy();
+
+        if (target == null)
+        {
+            HideTargetArrow();
+            return;
+        }
+
+        if (arrowTarget != target || targetArrowInstance == null || !targetArrowInstance.activeSelf)
+            ShowTargetArrowOn(target);
+        else
+            UpdateTargetArrowPosition();
+    }
+
+    void TryMouseSelectEnemy()
+    {
+        if (!allowClickToSelectEnemy) return;
+        if (state != TurnState.WaitingInput) return;
+        if (currentActor == null || !currentActor.isPlayer) return;
+
+        if (!Input.GetMouseButtonDown(0)) return;
+        if (worldCamera == null) worldCamera = Camera.main;
+        if (worldCamera == null) return;
+
+        Vector2 worldPos = worldCamera.ScreenToWorldPoint(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
+
+        if (hit.collider == null) return;
+
+        BattleUnit u = hit.collider.GetComponentInParent<BattleUnit>();
+        if (u == null) return;
+
+        if (u.isPlayer) return;
+        if (!IsAlive(u)) return;
+
+        SelectEnemyTarget(u); 
+        ShowTargetArrowOn(u);
+    }
+
+
+
     void AdvanceToNextActor()
     {
         if (state == TurnState.End) return;
@@ -311,6 +428,7 @@ public class BattleManager : MonoBehaviour
     IEnumerator PlayerAttackFlow(BattleUnit attacker, int token)
     {
         state = TurnState.Busy;
+        HideTargetArrow();
         busyOwnerToken = token;
         RefreshUI();
 
@@ -369,6 +487,8 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
         state = TurnState.Busy;
+        HideTargetArrow();
+
         RefreshUI();
 
         BattleUnit target =
