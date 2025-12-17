@@ -356,7 +356,6 @@ public class BattleManager : MonoBehaviour
 
         lockedTargetForThisAction[attacker] = target;
 
-        // ✅ 大招：锁定大招特效（没有配置就回退到普攻特效，保证不报错）
         GameObject fx = attacker.ultimateFxPrefab != null ? attacker.ultimateFxPrefab : attacker.attackFxPrefab;
         lockedFxPrefabForThisAction[attacker] = fx;
 
@@ -479,9 +478,6 @@ public class BattleManager : MonoBehaviour
         Debug.Log("[POPUP] spawned OK");
     }
 
-
-
-    // Animation Event 调用：攻击某一帧生成特效
     public void SpawnAttackFxNow(BattleUnit attacker)
     {
         if (attacker == null) return; 
@@ -497,7 +493,8 @@ public class BattleManager : MonoBehaviour
             fxPrefab = attacker.attackFxPrefab;
 
         Transform hit = target.hitPoint != null ? target.hitPoint : target.transform;
-        StartCoroutine(PlayFxAndWait(attacker.attackFxPrefab, hit));
+        StartCoroutine(PlayFxAndWait(fxPrefab, hit));
+
     }
 
     BattleUnit GetFirstAliveEnemy()
