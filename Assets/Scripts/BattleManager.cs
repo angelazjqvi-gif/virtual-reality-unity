@@ -7,6 +7,8 @@ using UnityEngine.SceneManagement;
 public class BattleManager : MonoBehaviour
 {
     public enum TurnState { WaitingInput, Busy, End }
+    private int turnToken = 0;          
+    private int busyOwnerToken = 0;     
 
     [System.Serializable]
     public class PlayerSlot
@@ -118,11 +120,19 @@ public class BattleManager : MonoBehaviour
             busyTimer += Time.deltaTime;
             if (busyTimer > busyTimeout)
             {
-                Debug.LogWarning("[WATCHDOG] Busy timeout -> force next turn");
-                busyTimer = 0f;
+                if (busyOwnerToken == turnToken)
+                {
+                    Debug.LogWarning($"[WATCHDOG] Busy timeout -> force next turn token={turnToken}");
+                    busyTimer = 0f;
 
-                queueIndex++;
-                AdvanceToNextActor();
+                    queueIndex++;
+                    AdvanceToNextActor();
+                }
+                else
+                {
+                    Debug.LogWarning($"[WATCHDOG] stale busy timeout ignored busyOwnerToken={busyOwnerToken} turnToken={turnToken}");
+                    busyTimer = 0f;
+                }
             }
         }
         else
@@ -258,6 +268,7 @@ public class BattleManager : MonoBehaviour
         }
 
         currentActor = speedQueue[queueIndex];
+        turnToken++;
         Debug.Log($"[TURN] idx={queueIndex}/{speedQueue.Count} next={currentActor.name} isPlayer={currentActor.isPlayer}");
 
         if (currentActor.isPlayer)
@@ -274,8 +285,9 @@ public class BattleManager : MonoBehaviour
 
         // 敌人自动行动
         state = TurnState.Busy;
+        busyOwnerToken = turnToken;
         RefreshUI();
-        StartCoroutine(EnemyAutoAttackFlow(currentActor));
+        StartCoroutine(EnemyAutoAttackFlow(currentActor, turnToken));
     }
 
     void OnClickAttack(int playerIndex)
@@ -286,7 +298,7 @@ public class BattleManager : MonoBehaviour
         BattleUnit attacker = players[playerIndex].unit;
         if (attacker == null || attacker != currentActor) return;
 
-        StartCoroutine(PlayerAttackFlow(attacker));
+        StartCoroutine(PlayerAttackFlow(attacker, turnToken));
     }
 
     void OnClickUltimate(int playerIndex)
@@ -297,12 +309,13 @@ public class BattleManager : MonoBehaviour
         BattleUnit attacker = players[playerIndex].unit;
         if (attacker == null || attacker != currentActor) return;
 
-        StartCoroutine(PlayerUltimateFlow(attacker));
+        StartCoroutine(PlayerUltimateFlow(attacker, turnToken));
     }
 
-    IEnumerator PlayerAttackFlow(BattleUnit attacker)
+    IEnumerator PlayerAttackFlow(BattleUnit attacker, int token)
     {
         state = TurnState.Busy;
+        busyOwnerToken = token;
         RefreshUI();
 
         BattleUnit target =
@@ -339,17 +352,23 @@ public class BattleManager : MonoBehaviour
             yield return EndBattleAndReturn(true);
             yield break;
         }
+        if (token != turnToken)
+        {
+            Debug.LogWarning($"[STALE] PlayerAttackFlow ignored token={token} turnToken={turnToken}");
+            yield break;
+        }
 
         queueIndex++;
         AdvanceToNextActor();
     }
 
-    IEnumerator PlayerUltimateFlow(BattleUnit attacker)
+    IEnumerator PlayerUltimateFlow(BattleUnit attacker, int token)
     {
         if (!attacker.HasFullEnergy())
         {
             Debug.LogWarning($"[ULT] {attacker.name} energy not full: {attacker.energy}/{attacker.energyMax}");
             state = TurnState.WaitingInput;
+            busyOwnerToken = token;
             RefreshUI();
             yield break;
         }
@@ -396,6 +415,11 @@ public class BattleManager : MonoBehaviour
                     StartCoroutine(PlayFxAndWait(attacker.ultimateHealFxPrefab, hit));
                 }
             }
+            if (token != turnToken)
+            {
+                Debug.LogWarning($"[STALE] PlayerUltimateFlow ignored token={token} turnToken={turnToken}");
+                yield break;
+            }
 
             queueIndex++;
             AdvanceToNextActor();
@@ -423,7 +447,7 @@ public class BattleManager : MonoBehaviour
     }
 
 
-    IEnumerator EnemyAutoAttackFlow(BattleUnit enemy)
+    IEnumerator EnemyAutoAttackFlow(BattleUnit enemy, int token)
     {
         yield return new WaitForSeconds(enemyDelayBeforeAttack);
 
@@ -451,6 +475,12 @@ public class BattleManager : MonoBehaviour
         if (AllPlayersDead())
         {
             yield return EndBattleAndReturn(false);
+            yield break;
+        }
+
+        if (token != turnToken)
+        {
+            Debug.LogWarning($"[STALE] EnemyAutoAttackFlow ignored token={token} turnToken={turnToken}");
             yield break;
         }
 
