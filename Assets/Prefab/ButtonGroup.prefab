@@ -200,8 +200,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u7EE7\u7EED"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: acb5aae466fe0b24ebad08b51316be89, type: 2}
-  m_sharedMaterial: {fileID: 7329569376626367182, guid: acb5aae466fe0b24ebad08b51316be89, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: bb88372bbc284964194814b30d379138, type: 2}
+  m_sharedMaterial: {fileID: 2992024557656932155, guid: bb88372bbc284964194814b30d379138, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -530,8 +530,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u7EE7\u7EED"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: acb5aae466fe0b24ebad08b51316be89, type: 2}
-  m_sharedMaterial: {fileID: 7329569376626367182, guid: acb5aae466fe0b24ebad08b51316be89, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: bb88372bbc284964194814b30d379138, type: 2}
+  m_sharedMaterial: {fileID: 2992024557656932155, guid: bb88372bbc284964194814b30d379138, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -605,6 +605,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2051098686043243846}
     m_Modifications:
+    - target: {fileID: 203907582734859253, guid: ceaa2f3c9de5ef6439f198c44b5a4e22, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: bb88372bbc284964194814b30d379138, type: 2}
+    - target: {fileID: 203907582734859253, guid: ceaa2f3c9de5ef6439f198c44b5a4e22, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2992024557656932155, guid: bb88372bbc284964194814b30d379138, type: 2}
+    - target: {fileID: 203907582734859253, guid: ceaa2f3c9de5ef6439f198c44b5a4e22, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 487361907548768514, guid: ceaa2f3c9de5ef6439f198c44b5a4e22, type: 3}
       propertyPath: m_Name
       value: Button (1)
