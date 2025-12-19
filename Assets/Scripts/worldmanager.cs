@@ -49,7 +49,6 @@ public class WorldManager : MonoBehaviour
             Debug.Log("[WorldManager] Player lost, apply cooldown to enemy: " + target.name);
             target.ApplyPlayerLoseCooldown();
         }
-        // ✅多人：把 party[i] 同步到主世界每个角色（血量/等级带来的基础属性也写回）
         if (worldPlayers != null && worldPlayers.Count > 0)
         {
             GameSession.I.EnsurePartySize(worldPlayers.Count);
