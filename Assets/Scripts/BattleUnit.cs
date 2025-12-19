@@ -32,6 +32,18 @@ public class BattleUnit : MonoBehaviour
     [Header("Death")]
     public bool destroyOnDeath = false;
 
+    [Header("Boss - Flags")]
+    public bool isSmallBoss = false;
+    public bool isBigBoss = false;
+
+    [Header("Boss - Transform")]
+    public bool transformOnDeath = false;             
+    public bool smallBossSkipDeathAnim = true;        
+    public string transformTriggerName = "Transform"; 
+    public string transformStateName = "";            
+    public GameObject transformFxPrefab = null;       
+    public Transform transformFxPoint = null; 
+
     [Header("Animator - Ultimate")]
     public string ultimateStateName;
 
@@ -102,6 +114,21 @@ public class BattleUnit : MonoBehaviour
         if (animator == null) return;
         animator.ResetTrigger("Die");
         animator.SetTrigger("Die");
+    }
+
+    public void TriggerTransform()
+    {
+        if (animator == null) return;
+        if (string.IsNullOrEmpty(transformTriggerName)) return;
+        animator.ResetTrigger(transformTriggerName);
+        animator.SetTrigger(transformTriggerName);
+    }
+
+    public Transform GetTransformFxPoint()
+    {
+        if (transformFxPoint != null) return transformFxPoint;
+        if (hitPoint != null) return hitPoint;
+        return transform;
     }
 
     public void TriggerUltimate()

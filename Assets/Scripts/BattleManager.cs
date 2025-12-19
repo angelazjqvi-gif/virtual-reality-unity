@@ -24,6 +24,14 @@ public class BattleManager : MonoBehaviour
     [Header("Enemies (N)")]
     public List<BattleUnit> enemies = new List<BattleUnit>();
 
+    [Header("Boss Transform")]
+    public BattleUnit bigBossPrefab;        
+    public Transform bigBossSpawnPoint;     
+
+    [Header("Wait Safety - Transform")]
+    public float maxWaitEnterTransform = 0.5f;
+    public float maxWaitTransformTotal = 3.0f;
+
     [Header("UI Overlay")]
     public BattleUIOverlay uiOverlay;
 
@@ -959,6 +967,12 @@ public class BattleManager : MonoBehaviour
     IEnumerator PlayDeathAndRemove(BattleUnit unit)
     {
         if (unit == null) yield break;
+        if (!unit.isPlayer && unit.isSmallBoss && unit.transformOnDeath && unit.smallBossSkipDeathAnim)
+        {
+            yield return SmallBossTransformThenSpawnBigBoss(unit);
+            yield break;
+        }
+
 
         if (unit.animator == null || string.IsNullOrEmpty(unit.deathStateName))
         {
@@ -1004,6 +1018,75 @@ public class BattleManager : MonoBehaviour
         CleanupDeadTargetRefs(unit);
         unit.HideOrDestroy();
     }
+
+    IEnumerator SmallBossTransformThenSpawnBigBoss(BattleUnit smallBoss)
+    {
+        if (smallBoss == null) yield break;
+
+        // 1) 变身特效（可选）
+        if (smallBoss.transformFxPrefab != null)
+        {
+            Transform p = smallBoss.GetTransformFxPoint();
+            StartCoroutine(PlayFxAndWait(smallBoss.transformFxPrefab, p));
+        }
+
+        // 2) 触发变身动画（不用 Die）
+        if (smallBoss.animator != null && !string.IsNullOrEmpty(smallBoss.transformStateName))
+        {
+            smallBoss.TriggerTransform();
+            yield return null;
+
+            float enter = 0f;
+            while (enter < maxWaitEnterTransform)
+            {
+                if (smallBoss == null) yield break;
+                if (smallBoss.animator == null) break;
+                var st = smallBoss.animator.GetCurrentAnimatorStateInfo(0);
+                if (st.IsName(smallBoss.transformStateName)) break;
+                enter += Time.deltaTime;
+                yield return null;
+            }
+
+            float t = 0f;
+            while (t < maxWaitTransformTotal)
+            {
+                if (smallBoss == null) yield break;
+                if (smallBoss.animator == null) break;
+                var st = smallBoss.animator.GetCurrentAnimatorStateInfo(0);
+
+                if (!st.IsName(smallBoss.transformStateName)) break;
+                if (!st.loop && st.normalizedTime >= 1f) break;
+
+                t += Time.deltaTime;
+                yield return null;
+            }
+        }
+
+        
+        if (bigBossPrefab != null)
+        {
+            Vector3 pos = smallBoss.transform.position;
+            if (bigBossSpawnPoint != null) pos = bigBossSpawnPoint.position;
+
+            BattleUnit big = Instantiate(bigBossPrefab, pos, Quaternion.identity);
+            if (big != null)
+            {
+                big.isPlayer = false;
+                big.isBigBoss = true;
+
+                enemies.Add(big);
+                RebuildAllUnits(); 
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[BOSS] bigBossPrefab is NULL, cannot spawn big boss.");
+        }
+
+        CleanupDeadTargetRefs(smallBoss);
+        smallBoss.HideOrDestroy();
+    }
+
 
     void CleanupDeadTargetRefs(BattleUnit dead)
     {
