@@ -1,176 +1,317 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine.UI;
 using System.Collections.Generic;
-using System.Linq;
+
+
 
 public class DialogManager : MonoBehaviour
 {
     [Header("Data")]
     public TextAsset dialogDataFile;
 
+    [Header("Sprites (SpriteRenderer)")]
+    public SpriteRenderer spriteLeft;
+    public SpriteRenderer spriteRight;
+
+    [Header("UI Text")]
+    public TMP_Text nameText;
+    public TMP_Text dialogText;
+
+    [Header("Character Sprites")]
+    public List<Sprite> sprites = new List<Sprite>(); 
+    private readonly System.Collections.Generic.Dictionary<string, Sprite> imageDic =
+        new System.Collections.Generic.Dictionary<string, Sprite>();
+
+    [Header("Flow")]
+    public int dialogIndex = 0;
+    public string[] dialogRows;
+
+    [Header("Next Button")]
+    public Button next;
+
+    [Header("Options")]
+    public GameObject optionButton;   
+    public Transform buttonGroup;     
+
+    [Header("Speaker Highlight")]
+    [Range(0f, 1f)] public float dimAlpha = 0.35f; // 另一边半透明
+    public float brightAlpha = 1f;                 // 说话者亮度
+    
     [System.Serializable]
-    public class CharacterData
+    public class PortraitEntry
     {
-        public string characterName;
-        public Sprite bodySprite;
-        public Sprite portraitSprite;
-    }
-    public CharacterData[] characters;
-
-    [Header("Stage Sprites")]
-    public SpriteRenderer imgLeft;
-    public SpriteRenderer imgRight;
-
-    [Header("UI")]
-    public Image portraitImage;
-    public TextMeshProUGUI nameText;
-    public TextMeshProUGUI dialogText;
-
-    [Header("Buttons")]
-    public Button nextButton;
-    public Button optionButtonPrefab;
-    public RectTransform buttonGroup;
-
-    [Header("Visual")]
-    [Range(0f,1f)] public float dimAlpha = 0.35f;
-
-    class DialogRow
-    {
-        public string flag;
-        public int id;
-        public string name;
-        public string pos;
-        public string content;
-        public int next;
+        public string who;            
+        public string expression;     
+        public Sprite sprite;         
     }
 
-    Dictionary<int, DialogRow> rows = new Dictionary<int, DialogRow>();
-    int currentId;
+    [Header("Portrait")]
+    public Image portraitImage;                       
+    public List<PortraitEntry> portraitEntries = new List<PortraitEntry>();
 
-    void Start()
-    {
-        LoadCSV();
-        nextButton.onClick.AddListener(OnNext);
-        ShowDialog(currentId);
-    }
+    private readonly Dictionary<string, Sprite> portraitDic = new Dictionary<string, Sprite>();
+    
+    private string PortraitKey(string who, string exp) => (who ?? "") + "|" + (exp ?? "");
 
-    void LoadCSV()
+    private void Awake()
     {
-        rows.Clear();
-        var lines = dialogDataFile.text.Split('\n');
-        for (int i = 1; i < lines.Length; i++)
+        if (sprites != null && sprites.Count >= 2)
         {
-            if (string.IsNullOrWhiteSpace(lines[i])) continue;
-            var c = lines[i].Trim().Split(',');
-
-            DialogRow r = new DialogRow
-            {
-                flag = c[0],
-                id = int.Parse(c[1]),
-                name = c[2],
-                pos = c[3],
-                content = c[4],
-                next = c.Length > 5 && c[5] != "" ? int.Parse(c[5]) : -1
-            };
-            rows[r.id] = r;
-        }
-        currentId = rows.Values
-    .Where(r => r.flag == "#")
-    .OrderBy(r => r.id)
-    .First().id;
-    }
-
-    void ShowDialog(int id)
-    {
-        ClearOptions();
-
-        if (!rows.ContainsKey(id)) return;
-        var r = rows[id];
-
-        if (r.flag == "end")
-        {
-            nextButton.gameObject.SetActive(false);
-            return;
-        }
-
-        nameText.text = r.name;
-        dialogText.text = r.content;
-
-        ApplyCharacter(r);
-        ApplyPortrait(r.name);
-
-        if (r.flag == "&")
-        {
-            nextButton.gameObject.SetActive(false);
-            ShowOptions(id);
+            imageDic["张舒然"] = sprites[0];
+            imageDic["普通细胞"] = sprites[1];
         }
         else
         {
-            nextButton.gameObject.SetActive(true);
+            Debug.LogWarning("sprites 列表数量不足（至少2个）。请在 Inspector 给 sprites 拖入两张角色立绘。");
+        }
+
+        portraitDic.Clear();
+        if (portraitEntries != null)
+        {
+            for (int i = 0; i < portraitEntries.Count; i++)
+            {
+                var e = portraitEntries[i];
+                if (e == null) continue;
+                if (string.IsNullOrEmpty(e.who)) continue;
+                if (string.IsNullOrEmpty(e.expression)) continue;
+                if (e.sprite == null) continue;
+
+                string key = PortraitKey(e.who.Trim(), e.expression.Trim());
+                if (!portraitDic.ContainsKey(key))
+                    portraitDic.Add(key, e.sprite);
+            }
         }
     }
 
-    void ApplyCharacter(DialogRow r)
+    private void Start()
     {
-        var c = characters.FirstOrDefault(x => x.characterName == r.name);
-        if (c == null) return;
+        ReadText(dialogDataFile);
 
-        if (r.pos == "左")
-        {
-            imgLeft.sprite = c.bodySprite;
-            imgLeft.color = Color.white;
-            imgRight.color = new Color(1,1,1,dimAlpha);
-        }
-        else if (r.pos == "右")
-        {
-            imgRight.sprite = c.bodySprite;
-            imgRight.color = Color.white;
-            imgLeft.color = new Color(1,1,1,dimAlpha);
-        }
+        
+        ClearOptions();
+        if (buttonGroup != null) buttonGroup.gameObject.SetActive(false);
+
+        
+        if (spriteLeft != null)  { spriteLeft.gameObject.SetActive(true);  spriteLeft.color = new Color(1,1,1,dimAlpha); }
+        if (spriteRight != null) { spriteRight.gameObject.SetActive(true); spriteRight.color = new Color(1,1,1,dimAlpha); }
+
+         if (portraitImage != null) portraitImage.gameObject.SetActive(true);
+
+        ShowDialogRow();
     }
 
-    void ApplyPortrait(string name)
+    public void ReadText(TextAsset textAsset)
     {
-        var c = characters.FirstOrDefault(x => x.characterName == name);
-        if (c == null || c.portraitSprite == null)
+        if (textAsset == null)
         {
-            portraitImage.gameObject.SetActive(false);
+            Debug.LogError("Dialog Data File 没有赋值！");
+            dialogRows = new string[0];
             return;
         }
 
-        portraitImage.sprite = c.portraitSprite;
-        portraitImage.gameObject.SetActive(true);
+        dialogRows = textAsset.text.Split('\n');
+        Debug.Log("读取成功");
     }
 
-    void ShowOptions(int startId)
+    
+    private string Cell(string[] cells, int idx)
     {
-        int id = startId;
-        while (rows.ContainsKey(id) && rows[id].flag == "&")
+        if (cells == null) return "";
+        if (idx < 0 || idx >= cells.Length) return "";
+        return cells[idx].Replace("\r", "").Trim();
+    }
+
+    private bool TryCellInt(string[] cells, int idx, out int value)
+    {
+        return int.TryParse(Cell(cells, idx), out value);
+    }
+
+    
+    public void UpdateText(string who, string text)
+    {
+        if (nameText != null) nameText.text = who;
+        if (dialogText != null) dialogText.text = text;
+    }
+    public void UpdateImage(string who, string position)
+    {
+        if (!imageDic.ContainsKey(who)) return;
+
+        if (spriteLeft == null || spriteRight == null) return;
+
+        // 两边都显示
+        spriteLeft.gameObject.SetActive(true);
+        spriteRight.gameObject.SetActive(true);
+
+        // 先统一变暗
+        spriteLeft.color  = new Color(1f, 1f, 1f, dimAlpha);
+        spriteRight.color = new Color(1f, 1f, 1f, dimAlpha);
+
+        // 再高亮说话者那边，并更新该边 sprite
+        if (position == "左")
         {
-            var r = rows[id];
-            Button b = Instantiate(optionButtonPrefab, buttonGroup);
-            b.GetComponentInChildren<TextMeshProUGUI>().text = r.content;
-            int jump = r.next;
-            b.onClick.AddListener(() =>
-            {
-                currentId = jump;
-                ShowDialog(currentId);
-            });
-            id++;
+            spriteLeft.sprite = imageDic[who];
+            spriteLeft.color = new Color(1f, 1f, 1f, brightAlpha);
+        }
+        else if (position == "右")
+        {
+            spriteRight.sprite = imageDic[who];
+            spriteRight.color = new Color(1f, 1f, 1f, brightAlpha);
         }
     }
 
-    void ClearOptions()
+    public void UpdatePortrait(string who, string portraitExpression)
     {
-        foreach (Transform t in buttonGroup)
-            Destroy(t.gameObject);
+        if (portraitImage == null) return;
+
+        portraitImage.gameObject.SetActive(true);
+
+        // portraitExpression 为空时默认 normal
+        string exp = string.IsNullOrEmpty(portraitExpression) ? "normal" : portraitExpression.Trim();
+        string key = PortraitKey((who ?? "").Trim(), exp);
+
+        if (portraitDic.TryGetValue(key, out Sprite sp) && sp != null)
+        {
+            portraitImage.sprite = sp;
+            portraitImage.enabled = true;
+        }
+        else
+        {
+            // 找不到就不报错、不清空
+            // portraitImage.sprite = null;
+            // portraitImage.enabled = false;
+        }
+    }
+    
+    public void ShowDialogRow()
+    {
+        if (dialogRows == null || dialogRows.Length == 0) return;
+
+        for (int i = 0; i < dialogRows.Length; i++)
+        {
+            string row = dialogRows[i].Replace("\r", "").Trim();
+            if (string.IsNullOrEmpty(row)) continue;
+
+            string[] cells = row.Split(',');
+            string tag = Cell(cells, 0);
+
+            // 普通对白：#,id,name,pos,text,nextId
+            if (tag == "#" && TryCellInt(cells, 1, out int id) && id == dialogIndex)
+            {
+                string who = Cell(cells, 2);
+                string pos = Cell(cells, 3);
+                string text = Cell(cells, 4);
+                string portraitExp = Cell(cells, 7);
+
+                UpdateText(who, text);
+                UpdateImage(who, pos);
+
+                UpdatePortrait(who, portraitExp);
+
+                
+                if (TryCellInt(cells, 5, out int nextId))
+                    dialogIndex = nextId;
+
+                if (next != null) next.gameObject.SetActive(true);
+                if (buttonGroup != null) buttonGroup.gameObject.SetActive(false);
+
+                return;
+            }
+
+            if (tag == "&" && TryCellInt(cells, 1, out int optId) && optId == dialogIndex)
+            {
+                if (next != null) next.gameObject.SetActive(false);
+
+                if (buttonGroup != null) buttonGroup.gameObject.SetActive(true);
+                GenerateOptions(i);
+
+                return;
+            }
+
+            // 结束：end,id
+            if (tag == "end" && TryCellInt(cells, 1, out int endId) && endId == dialogIndex)
+            {
+                Debug.Log("剧情结束");
+                if (next != null) next.gameObject.SetActive(false);
+                if (buttonGroup != null) buttonGroup.gameObject.SetActive(false);
+                ClearOptions();
+                return;
+            }
+        }
+
+        Debug.LogWarning("没有找到 dialogIndex=" + dialogIndex + " 对应行，请检查 CSV。");
     }
 
-    public void OnNext()
+    public void GenerateOptions(int startIndex)
     {
-        if (!rows.ContainsKey(currentId)) return;
-        currentId = rows[currentId].next;
-        ShowDialog(currentId);
+        ClearOptions();
+
+        if (optionButton == null || buttonGroup == null)
+        {
+            Debug.LogError("optionButton 或 buttonGroup 未赋值！");
+            return;
+        }
+
+        for (int i = startIndex; i < dialogRows.Length; i++)
+        {
+            string row = dialogRows[i].Replace("\r", "").Trim();
+            if (string.IsNullOrEmpty(row)) continue;
+
+            string[] cells = row.Split(',');
+            string tag = Cell(cells, 0);
+
+            if (tag != "&") break; // 选项段结束
+
+            string optionText = Cell(cells, 4);
+            if (string.IsNullOrEmpty(optionText)) continue;
+
+            if (!TryCellInt(cells, 5, out int jumpId))
+            {
+                Debug.LogWarning("选项 jumpId 为空/非法: " + row);
+                continue;
+            }
+
+            GameObject btnGO = Instantiate(optionButton, buttonGroup);
+
+            // 文本
+            TMP_Text t = btnGO.GetComponentInChildren<TMP_Text>();
+            if (t != null) t.text = optionText;
+
+            // 点击
+            Button b = btnGO.GetComponent<Button>();
+            if (b != null)
+            {
+                int captured = jumpId;
+                b.onClick.RemoveAllListeners();
+                b.onClick.AddListener(() => OnOptionClick(captured));
+            }
+        }
+    }
+
+    public void OnOptionClick(int nextId)
+    {
+        ClearOptions();
+        if (buttonGroup != null) buttonGroup.gameObject.SetActive(false);
+
+        // 恢复 Next
+        if (next != null) next.gameObject.SetActive(true);
+
+        dialogIndex = nextId;
+        ShowDialogRow();
+    }
+
+    public void OnClickNext()
+    {
+        ShowDialogRow();
+    }
+
+    private void ClearOptions()
+    {
+        if (buttonGroup == null) return;
+
+        for (int i = buttonGroup.childCount - 1; i >= 0; i--)
+        {
+            Destroy(buttonGroup.GetChild(i).gameObject);
+        }
     }
 }
