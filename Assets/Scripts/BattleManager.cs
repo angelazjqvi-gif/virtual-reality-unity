@@ -26,7 +26,20 @@ public class BattleManager : MonoBehaviour
 
     [Header("Boss Transform")]
     public BattleUnit bigBossPrefab;        
-    public Transform bigBossSpawnPoint;     
+    public Transform bigBossSpawnPoint;
+
+    [Header("BigBoss - Summon Minions (Skill2)")]
+    public BattleUnit minionPrefab;                 
+    public GameObject minionSpawnFxPrefab;          
+    public Transform[] minionSpawnPoints;           
+    public Vector3 fallbackSpawnOffset1 = new Vector3(-1.2f, 0f, 0f);
+    public Vector3 fallbackSpawnOffset2 = new Vector3( 1.2f, 0f, 0f);
+
+    [Header("Wait Safety - Summon")]
+    public float maxWaitEnterSummon = 0.5f;
+    public float maxWaitSummonTotal = 3.0f;
+
+    private readonly HashSet<BattleUnit> bigBossSummonUsed = new HashSet<BattleUnit>();     
 
     [Header("Wait Safety - Transform")]
     public float maxWaitEnterTransform = 0.5f;
@@ -650,6 +663,21 @@ public class BattleManager : MonoBehaviour
         yield return new WaitForSeconds(enemyDelayBeforeAttack);
 
         BattleUnit target = PickAlivePlayer();
+
+        if (enemy != null && enemy.isBigBoss && enemy.bigBossUseSummonOnce && !bigBossSummonUsed.Contains(enemy))
+        {
+            yield return BigBossSummonFlow(enemy, token);
+
+            if (token != turnToken)
+            {
+                Debug.LogWarning($"[STALE] BigBossSummonFlow ignored token={token} turnToken={turnToken}");
+                yield break;
+            }
+
+            queueIndex++;
+            AdvanceToNextActor();
+            yield break;
+        }
         if (target == null)
         {
             yield return EndBattleAndReturn(false);
@@ -684,6 +712,144 @@ public class BattleManager : MonoBehaviour
 
         queueIndex++;
         AdvanceToNextActor();
+    }
+
+    IEnumerator BigBossSummonFlow(BattleUnit boss, int token)
+    {
+        if (boss == null) yield break;
+
+        // 标记已使用（保证只用一次）
+        bigBossSummonUsed.Add(boss);
+
+        // 进入Busy（敌人回合本来就是Busy，但这里确保一致）
+        state = TurnState.Busy;
+        busyOwnerToken = token;
+        RefreshUI();
+
+        // 1) boss自身播放召唤动画 + 可选施法特效
+        if (boss.summonFxPrefab != null)
+        {
+            Transform p = boss.GetSummonFxPoint();
+            StartCoroutine(PlayFxAndWait(boss.summonFxPrefab, p));
+        }
+
+        boss.TriggerSummon();
+        yield return WaitSummonFinish(boss);
+
+        // 2) 召唤两只小怪（每个点：先播出生特效，再实例化小怪）
+        if (minionPrefab == null)
+        {
+            Debug.LogWarning("[SUMMON] minionPrefab is NULL, skip spawn.");
+            yield break;
+        }
+
+        Vector3 p1, p2;
+        GetTwoSummonPositions(boss, out p1, out p2);
+
+        yield return SpawnMinionAfterFx(p1);
+        yield return SpawnMinionAfterFx(p2);
+
+        // 召唤后重建单位列表（新怪进入 enemies/allUnits）
+        RebuildAllUnits();
+        RefreshUI();
+    }
+
+    IEnumerator WaitSummonFinish(BattleUnit unit)
+    {
+        if (unit == null || unit.animator == null) yield break;
+
+        // summonStateName没填：就按攻击等待（不让它卡死）
+        if (string.IsNullOrEmpty(unit.summonStateName))
+        {
+            yield return WaitAttackFinish(unit);
+            yield break;
+        }
+
+        yield return null;
+
+        float t = 0f;
+        while (!unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.summonStateName) && t < maxWaitEnterSummon)
+        {
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        if (!unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.summonStateName))
+            yield break;
+
+        float t2 = 0f;
+        while (unit.animator.GetCurrentAnimatorStateInfo(0).IsName(unit.summonStateName) && t2 < maxWaitSummonTotal)
+        {
+            var st = unit.animator.GetCurrentAnimatorStateInfo(0);
+            if (!st.loop && st.normalizedTime >= 1f) break;
+
+            t2 += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    void GetTwoSummonPositions(BattleUnit boss, out Vector3 p1, out Vector3 p2)
+    {
+        // 优先用你在Inspector设置的两个出生点
+        if (minionSpawnPoints != null && minionSpawnPoints.Length >= 2 &&
+            minionSpawnPoints[0] != null && minionSpawnPoints[1] != null)
+        {
+            p1 = minionSpawnPoints[0].position;
+            p2 = minionSpawnPoints[1].position;
+            return;
+        }
+
+        // 否则用boss位置两侧偏移
+        Vector3 basePos = boss != null ? boss.transform.position : Vector3.zero;
+        p1 = basePos + fallbackSpawnOffset1;
+        p2 = basePos + fallbackSpawnOffset2;
+    }
+
+    IEnumerator SpawnMinionAfterFx(Vector3 spawnPos)
+    {
+        // 先播召唤点动画/特效（必须）
+        if (minionSpawnFxPrefab != null)
+        {
+            // 复用现有 PlayFxAndWait（它会等特效播完再Destroy）
+            GameObject fx = Instantiate(minionSpawnFxPrefab, spawnPos, Quaternion.identity);
+
+            var sr = fx.GetComponentInChildren<SpriteRenderer>();
+            if (sr != null) sr.sortingOrder = 999;
+
+            var anim = fx.GetComponent<Animator>();
+            if (anim != null)
+            {
+                yield return null;
+                float t = 0f;
+                while (anim != null && t < maxWaitFx)
+                {
+                    var st = anim.GetCurrentAnimatorStateInfo(0);
+                    if (!st.loop && st.normalizedTime >= 1f) break;
+                    t += Time.deltaTime;
+                    yield return null;
+                }
+            }
+            else
+            {
+                // 没Animator就用兜底时间
+                yield return new WaitForSeconds(fxFallbackTime);
+            }
+
+            Destroy(fx);
+        }
+        else
+        {
+            // 没有出生特效也不能“立刻出怪”——给个最短兜底
+            yield return new WaitForSeconds(0.15f);
+        }
+
+        // 再出小怪
+        BattleUnit m = Instantiate(minionPrefab, spawnPos, Quaternion.identity);
+        if (m != null)
+        {
+            m.isPlayer = false;
+            enemies.Add(m);
+        }
     }
 
     DamageResult ComputeDamage(BattleUnit attacker, BattleUnit target)

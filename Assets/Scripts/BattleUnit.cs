@@ -12,10 +12,10 @@ public class BattleUnit : MonoBehaviour
 
     [Range(0f, 1f)]
     public float cr = 0.1f;     // Crit Rate
-    public float cd = 1.5f;     // Crit Damage multiplier (1.5=150%)
+    public float cd = 1.5f;     
 
     [Range(0f, 1f)]
-    public float er = 0f;       // Effect Resist（预留：抵抗减速/被控等）
+    public float er = 0f;       
 
     [Header("Team")]
     public bool isPlayer = true; // true=玩家，false=敌人
@@ -43,6 +43,13 @@ public class BattleUnit : MonoBehaviour
     public string transformStateName = "";            
     public GameObject transformFxPrefab = null;       
     public Transform transformFxPoint = null; 
+
+    [Header("Boss - Summon (Skill2)")]
+    public bool bigBossUseSummonOnce = true;        
+    public string summonTriggerName = "Summon";     
+    public string summonStateName = "";             
+    public GameObject summonFxPrefab = null;        
+    public Transform summonFxPoint = null; 
 
     [Header("Animator - Ultimate")]
     public string ultimateStateName;
@@ -209,6 +216,21 @@ public class BattleUnit : MonoBehaviour
         Vector3 p = energyFillPosFullRuntime;
         p.x = energyFillPosFullRuntime.x - (energyFillScaleFullRuntime.x * (1f - t) * 0.5f);
         energyBarFill.localPosition = p;
+    }
+
+    public void TriggerSummon()
+    {
+        if (animator == null) return;
+        if (string.IsNullOrEmpty(summonTriggerName)) return;
+        animator.ResetTrigger(summonTriggerName);
+        animator.SetTrigger(summonTriggerName);
+    }
+
+    public Transform GetSummonFxPoint()
+    {
+        if (summonFxPoint != null) return summonFxPoint;
+        if (hitPoint != null) return hitPoint;
+        return transform;
     }
 
     void Update()
