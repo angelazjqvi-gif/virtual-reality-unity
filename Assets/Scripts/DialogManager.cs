@@ -45,6 +45,21 @@ public class DialogManager : MonoBehaviour
         public string expression;     
         public Sprite sprite;         
     }
+    
+    [System.Serializable]
+    public class BodyEntry
+    {
+        public string who;
+        public string expression;
+        public Sprite sprite;
+    }
+
+    [Header("Body Expression (SpriteRenderer)")]
+    public List<BodyEntry> bodyEntries = new List<BodyEntry>();
+
+    private readonly Dictionary<string, Sprite> bodyDic = new Dictionary<string, Sprite>();
+    private string BodyKey(string who, string exp) => (who ?? "") + "|" + (exp ?? "");
+
 
     [Header("Portrait")]
     public Image portraitImage;                       
@@ -80,6 +95,23 @@ public class DialogManager : MonoBehaviour
                 string key = PortraitKey(e.who.Trim(), e.expression.Trim());
                 if (!portraitDic.ContainsKey(key))
                     portraitDic.Add(key, e.sprite);
+            }
+        }
+
+        bodyDic.Clear();
+        if (bodyEntries != null)
+        {
+            for (int i = 0; i < bodyEntries.Count; i++)
+            {
+                var e = bodyEntries[i];
+                if (e == null) continue;
+                if (string.IsNullOrEmpty(e.who)) continue;
+                if (string.IsNullOrEmpty(e.expression)) continue;
+                if (e.sprite == null) continue;
+
+                string key = BodyKey(e.who.Trim().Trim('\uFEFF'), e.expression.Trim().Trim('\uFEFF'));
+                if (!bodyDic.ContainsKey(key))
+                    bodyDic.Add(key, e.sprite);
             }
         }
     }
@@ -201,11 +233,12 @@ public class DialogManager : MonoBehaviour
                 string who = Cell(cells, 2);
                 string pos = Cell(cells, 3);
                 string text = Cell(cells, 4);
+                string bodyExp = Cell(cells, 6);
                 string portraitExp = Cell(cells, 7);
 
                 UpdateText(who, text);
                 UpdateImage(who, pos);
-
+                UpdateBodyExpression(who, pos, bodyExp);
                 UpdatePortrait(who, portraitExp);
 
                 
@@ -314,4 +347,35 @@ public class DialogManager : MonoBehaviour
             Destroy(buttonGroup.GetChild(i).gameObject);
         }
     }
+
+
+    public void UpdateBodyExpression(string who, string position, string bodyExpression)
+    {
+        if (spriteLeft == null || spriteRight == null) return;
+
+        string w = (who ?? "").Trim().Trim('\uFEFF');
+        string exp = string.IsNullOrEmpty(bodyExpression) ? "normal" : bodyExpression.Trim().Trim('\uFEFF');
+
+        // 1) 先精确匹配 who|exp
+        Sprite sp = null;
+        string key = BodyKey(w, exp);
+        if (!bodyDic.TryGetValue(key, out sp) || sp == null)
+        {
+            // 2) 回退 normal，避免找不到导致沿用上一句
+            string key2 = BodyKey(w, "normal");
+            bodyDic.TryGetValue(key2, out sp);
+        }
+        if (sp == null) return;
+
+        // 只换说话者那一侧的立绘
+        if (position == "左")
+        {
+            spriteLeft.sprite = sp;
+        }
+        else if (position == "右")
+        {
+            spriteRight.sprite = sp;
+        }
+    }
+
 }
