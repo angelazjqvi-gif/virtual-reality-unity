@@ -63,14 +63,14 @@ public class BattleManager : MonoBehaviour
     [Header("Scene Names")]
     public string worldSceneName = "world1";
 
-    [Header("Damage Popup (TMP UI)")]
+    [Header("Damage Popup")]
     public DamagePopup damagePopupPrefab;
     public Canvas popupCanvas;
     public Camera worldCamera;
     public Vector3 popupWorldOffset = new Vector3(0f, 1.2f, 0f);
 
     [Header("Watchdog (Anti-freeze)")]
-    public float busyTimeout = 5f;   
+    public float busyTimeout = 20f;   
     private float busyTimer = 0f;
 
     [Header("Wait Safety - Ultimate")]
@@ -219,6 +219,7 @@ public class BattleManager : MonoBehaviour
 
     void BuildSpeedQueueNewRound()
     {
+        RebuildAllUnits();
         speedQueue.Clear();
         for (int i = 0; i < allUnits.Count; i++)
         {
@@ -492,6 +493,7 @@ public class BattleManager : MonoBehaviour
         }
 
         state = TurnState.Busy;
+        busyTimer = 0f;
         busyOwnerToken = turnToken;
         RefreshUI();
         StartCoroutine(EnemyAutoAttackFlow(currentActor, turnToken));
@@ -718,15 +720,12 @@ public class BattleManager : MonoBehaviour
     {
         if (boss == null) yield break;
 
-        // 标记已使用（保证只用一次）
         bigBossSummonUsed.Add(boss);
 
-        // 进入Busy（敌人回合本来就是Busy，但这里确保一致）
         state = TurnState.Busy;
         busyOwnerToken = token;
         RefreshUI();
 
-        // 1) boss自身播放召唤动画 + 可选施法特效
         if (boss.summonFxPrefab != null)
         {
             Transform p = boss.GetSummonFxPoint();
@@ -736,7 +735,6 @@ public class BattleManager : MonoBehaviour
         boss.TriggerSummon();
         yield return WaitSummonFinish(boss);
 
-        // 2) 召唤两只小怪（每个点：先播出生特效，再实例化小怪）
         if (minionPrefab == null)
         {
             Debug.LogWarning("[SUMMON] minionPrefab is NULL, skip spawn.");
@@ -747,10 +745,7 @@ public class BattleManager : MonoBehaviour
         GetTwoSummonPositions(boss, out p1, out p2);
 
         yield return SpawnMinionAfterFx(p1);
-        yield return SpawnMinionAfterFx(p2);
-
-        // 召唤后重建单位列表（新怪进入 enemies/allUnits）
-        RebuildAllUnits();
+        //RebuildAllUnits();
         RefreshUI();
     }
 
