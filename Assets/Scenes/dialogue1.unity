@@ -1543,6 +1543,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1048425007}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: dialogDataFile
+      value: 
+      objectReference: {fileID: 4900000, guid: 00f98695df5dd544c89c81937a0ee6e3, type: 3}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: optionButtonPrefab
       value: 
       objectReference: {fileID: 487361907548768514, guid: ceaa2f3c9de5ef6439f198c44b5a4e22, type: 3}

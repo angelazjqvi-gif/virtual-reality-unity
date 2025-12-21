@@ -154,3 +154,42 @@ MonoBehaviour:
   maxHp: 30
   hp: 30
   atk: 10
+  def: 0
+  spd: 10
+  cr: 0.1
+  cd: 1.5
+  er: 0
+  isPlayer: 1
+  animator: {fileID: 0}
+  attackStateName: 
+  deathStateName: death
+  attackFxPrefab: {fileID: 0}
+  hitPoint: {fileID: 0}
+  destroyOnDeath: 0
+  isSmallBoss: 0
+  isBigBoss: 0
+  transformOnDeath: 0
+  smallBossSkipDeathAnim: 1
+  transformTriggerName: Transform
+  transformStateName: 
+  transformFxPrefab: {fileID: 0}
+  transformFxPoint: {fileID: 0}
+  bigBossUseSummonOnce: 1
+  summonTriggerName: Summon
+  summonStateName: 
+  summonFxPrefab: {fileID: 0}
+  summonFxPoint: {fileID: 0}
+  ultimateStateName: 
+  ultimateFxPrefab: {fileID: 0}
+  ultimateHealsParty: 0
+  ultimateHealFlat: 15
+  ultimateHealAtkRatio: 0
+  ultimateHealFxPrefab: {fileID: 0}
+  energy: 0
+  energyMax: 100
+  energyBarRoot: {fileID: 0}
+  energyBarFill: {fileID: 0}
+  energyBarOnlyForPlayers: 1
+  energyBarScaleFull: {x: 1, y: 1, z: 1}
+  glowWhenEnergyFull: 1
+  glowSpeed: 6

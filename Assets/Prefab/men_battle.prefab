@@ -133,12 +133,45 @@ MonoBehaviour:
   maxHp: 30
   hp: 30
   atk: 10
+  def: 0
+  spd: 10
+  cr: 0.1
+  cd: 1.5
+  er: 0
   isPlayer: 1
   animator: {fileID: 5406328730349786803}
   attackStateName: man_battle_attck
+  deathStateName: death
   attackFxPrefab: {fileID: 9201859481583990898, guid: de3596ca471bce846a8eee61af7072bc, type: 3}
   hitPoint: {fileID: 8497008458473929068}
   destroyOnDeath: 0
+  isSmallBoss: 0
+  isBigBoss: 0
+  transformOnDeath: 0
+  smallBossSkipDeathAnim: 1
+  transformTriggerName: Transform
+  transformStateName: 
+  transformFxPrefab: {fileID: 0}
+  transformFxPoint: {fileID: 0}
+  bigBossUseSummonOnce: 1
+  summonTriggerName: Summon
+  summonStateName: 
+  summonFxPrefab: {fileID: 0}
+  summonFxPoint: {fileID: 0}
+  ultimateStateName: 
+  ultimateFxPrefab: {fileID: 0}
+  ultimateHealsParty: 0
+  ultimateHealFlat: 15
+  ultimateHealAtkRatio: 0
+  ultimateHealFxPrefab: {fileID: 0}
+  energy: 0
+  energyMax: 100
+  energyBarRoot: {fileID: 0}
+  energyBarFill: {fileID: 0}
+  energyBarOnlyForPlayers: 1
+  energyBarScaleFull: {x: 1, y: 1, z: 1}
+  glowWhenEnergyFull: 1
+  glowSpeed: 6
 --- !u!95 &5406328730349786803
 Animator:
   serializedVersion: 5

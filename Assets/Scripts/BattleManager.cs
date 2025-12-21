@@ -52,7 +52,7 @@ public class BattleManager : MonoBehaviour
     public float enemyDelayBeforeAttack = 0.4f;
 
     [Header("FX fallback")]
-    public float fxFallbackTime = 0.6f;
+    public float fxFallbackTime = 3f;
 
     [Header("Wait Safety")]
     public float maxWaitEnterAttack = 0.5f;

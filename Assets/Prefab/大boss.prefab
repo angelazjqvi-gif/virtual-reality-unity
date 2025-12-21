@@ -159,6 +159,11 @@ MonoBehaviour:
   transformStateName: 
   transformFxPrefab: {fileID: 0}
   transformFxPoint: {fileID: 0}
+  bigBossUseSummonOnce: 1
+  summonTriggerName: Summon
+  summonStateName: 
+  summonFxPrefab: {fileID: 0}
+  summonFxPoint: {fileID: 0}
   ultimateStateName: 
   ultimateFxPrefab: {fileID: 0}
   ultimateHealsParty: 0
