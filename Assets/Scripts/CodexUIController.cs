@@ -16,7 +16,6 @@ public class CodexUIController : MonoBehaviour
 
     void Start()
     {
-        // ✅ 面板默认隐藏（但脚本所在物体必须保持激活）
         if (codexPanel != null) codexPanel.SetActive(false);
         isOpen = false;
 
@@ -52,7 +51,6 @@ public class CodexUIController : MonoBehaviour
             Toggle();
         }
 
-        // 可选：打开时每帧刷新（如果你会实时改HP/EXP）
         if (isOpen)
         {
             RefreshText();
@@ -107,10 +105,14 @@ public class CodexUIController : MonoBehaviour
         int need = GameSession.I.ExpToNextLevel(pd.level);
         if (need <= 0) need = 1;
 
-        // ✅ 只读 GameSession 的数据来显示
         infoText.text =
             $"{pd.playerName}\n" +
             $"HP {pd.currentHp}/{pd.baseMaxHp}\n" +
-            $"Lv {pd.level}  EXP {pd.exp}/{need}";
+            $"Lv {pd.level}  EXP {pd.exp}/{need}"+
+            $"ATK {pd.baseAtk}\n" +
+            $"DEF {pd.baseDef}\n" +
+            $"SPD {pd.baseSpd}\n" +
+            $"CR {(pd.baseCr * 100f):0.#}%\n" +
+            $"CD {pd.baseCd:0.00}x";
     }
 }
