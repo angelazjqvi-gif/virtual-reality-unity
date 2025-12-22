@@ -7,7 +7,7 @@ public class GameSession : MonoBehaviour
     public static GameSession I;
 
     [Header("Battle Link")]
-    public int currentEnemyId = -1;   // ��ǰս����Ӧ�����������ID
+    public int currentEnemyId = -1;   
     public bool playerWon = false;
     public bool playerLost = false;
 
