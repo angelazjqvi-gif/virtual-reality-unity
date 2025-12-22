@@ -17,6 +17,46 @@ public class WorldManager : MonoBehaviour
     {
         if (scene.name != worldSceneName) return;
         if (GameSession.I == null) { Debug.LogWarning("[WorldManager] GameSession.I null"); return; }
+        if (GameSession.I.worldTransferPending)
+        {
+            
+            if (worldPlayers != null && worldPlayers.Count > 0)
+            {
+                GameSession.I.EnsurePartySize(worldPlayers.Count);
+                for (int i = 0; i < worldPlayers.Count; i++)
+                {
+                    if (worldPlayers[i] != null)
+                        GameSession.I.ApplyToWorldPlayer(worldPlayers[i], i);
+                }
+            }
+        WorldSpawnPoint spawnTarget = null;
+        foreach (var sp in FindObjectsOfType<WorldSpawnPoint>())
+        {
+            if (sp.spawnId == GameSession.I.targetSpawnId) { spawnTarget = sp; break; }
+        }
+
+        if (spawnTarget != null)
+        {
+            if (GameSession.I.transferMoveWholeParty)
+            {
+                for (int i = 0; i < worldPlayers.Count; i++)
+                {
+                    if (worldPlayers[i] != null)
+                        worldPlayers[i].transform.position = spawnTarget.transform.position + new Vector3(i * 0.5f, 0f, 0f);
+                }
+            }
+            else
+            {
+                int idx = Mathf.Clamp(GameSession.I.activePlayerIndex, 0, worldPlayers.Count - 1);
+                if (idx >= 0 && idx < worldPlayers.Count && worldPlayers[idx] != null)
+                    worldPlayers[idx].transform.position = spawnTarget.transform.position;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[WorldManager] WorldTransfer: can't find spawnId=" + GameSession.I.targetSpawnId);
+        }
+            
         if (GameSession.I.currentEnemyId < 0) return; // 没有战斗返回
 
         int id = GameSession.I.currentEnemyId;
@@ -65,5 +105,6 @@ public class WorldManager : MonoBehaviour
         }
 
         GameSession.I.ClearBattleLink();
+    }
     }
 }

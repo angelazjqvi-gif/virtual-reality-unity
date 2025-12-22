@@ -7,7 +7,7 @@ public class GameSession : MonoBehaviour
     public static GameSession I;
 
     [Header("Battle Link")]
-    public int currentEnemyId = -1;   // µ±Ç°Õ½¶·¶ÔÓ¦µÄÖ÷ÊÀ½çµÐÈËID
+    public int currentEnemyId = -1;   // ï¿½ï¿½Ç°Õ½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID
     public bool playerWon = false;
     public bool playerLost = false;
 
@@ -80,10 +80,35 @@ public class GameSession : MonoBehaviour
     [Header("Party (Multi Players)")]
     public List<PlayerData> party = new List<PlayerData>();
 
-    [Header("Active Player Index (World Tab switch uses this)")]
+    [Header("Active Player Index ")]
     public int activePlayerIndex = 0;
 
     public Action<int> OnActivePlayerChanged;
+
+    [Header("World Transfer")]
+    public bool worldTransferPending = false;
+    public string targetWorldScene = "";
+    public string targetSpawnId = "";
+    public bool transferMoveWholeParty = true;
+
+    public void BeginWorldTransfer(string toScene, string spawnId, bool moveWholeParty = true)
+    {
+        worldTransferPending = true;
+        targetWorldScene = toScene;
+        targetSpawnId = spawnId;
+        transferMoveWholeParty = moveWholeParty;
+
+        Debug.Log($"[GameSession] BeginWorldTransfer to={toScene}, spawn={spawnId}, allParty={moveWholeParty}");
+    }
+
+    public void ClearWorldTransfer()
+    {
+        worldTransferPending = false;
+        targetWorldScene = "";
+        targetSpawnId = "";
+        transferMoveWholeParty = true;
+    }
+
 
     public void EnsurePartySize(int n)
     {
