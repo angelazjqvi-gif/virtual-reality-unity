@@ -1984,7 +1984,7 @@ MonoBehaviour:
   hp: 30
   atk: 10
   def: 0
-  spd: 10
+  spd: 50
   cr: 0.1
   cd: 1.5
   er: 0
@@ -1992,7 +1992,7 @@ MonoBehaviour:
   animator: {fileID: 1955082847}
   attackStateName: white_battle_attack
   deathStateName: death
-  attackFxPrefab: {fileID: 2662225108412209436, guid: 761d2aada00396d4bab94caa8cf47bbd, type: 3}
+  attackFxPrefab: {fileID: 1572278377857261316, guid: 409ca99568b78ab4d80dbc0e6adb9cf9, type: 3}
   hitPoint: {fileID: 1803066595}
   destroyOnDeath: 0
   isSmallBoss: 0
@@ -2475,6 +2475,10 @@ PrefabInstance:
       propertyPath: summonStateName
       value: big_boss_summon
       objectReference: {fileID: 0}
+    - target: {fileID: 6172842820036166124, guid: fd98612057ba42144ac11c3dff22fe86, type: 3}
+      propertyPath: ultimateFxPrefab
+      value: 
+      objectReference: {fileID: 653115291092706152, guid: c6c4182473c68a6439aed69927bc325c, type: 3}
     - target: {fileID: 6172842820036166124, guid: fd98612057ba42144ac11c3dff22fe86, type: 3}
       propertyPath: smallBossSkipDeathAnim
       value: 0
