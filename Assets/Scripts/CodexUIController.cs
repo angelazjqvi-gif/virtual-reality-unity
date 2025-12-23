@@ -5,9 +5,15 @@ using TMPro;
 public class CodexUIController : MonoBehaviour
 {
     [Header("UI Refs")]
-    public GameObject codexPanel;     // 你的 CodexPanel（面板根物体）
-    public TMP_Text infoText;         // 面板里显示文字的 TMP_Text
-    public Button closeButton;        // 面板里的“关闭”按钮（可不填）
+    public GameObject codexPanel;
+    public TMP_Text titleText;     
+    public TMP_Text infoText;         
+    public Button closeButton;
+
+    [Header("Right Portrait")]
+    public Image portraitImage;          
+    public Sprite defaultPortrait;      
+    public bool cycleUnlockedOnly = true;        
 
     [Header("Toggle Key")]
     public KeyCode toggleKey = KeyCode.C;
@@ -50,6 +56,9 @@ public class CodexUIController : MonoBehaviour
         {
             Toggle();
         }
+
+        if (isOpen && Input.GetKeyDown(KeyCode.Tab))
+            CycleNextPlayer();
 
         if (isOpen)
         {
@@ -104,15 +113,60 @@ public class CodexUIController : MonoBehaviour
 
         int need = GameSession.I.ExpToNextLevel(pd.level);
         if (need <= 0) need = 1;
+        if (titleText != null)
+        {
+            titleText.text = "<size=80><color=#FF3B30><b>角色图鉴</b></color></size>";
+        }
 
         infoText.text =
             $"{pd.playerName}\n" +
             $"HP {pd.currentHp}/{pd.baseMaxHp}\n" +
-            $"Lv {pd.level}  EXP {pd.exp}/{need}"+
+            $"Lv {pd.level}  EXP {pd.exp}/{need}\n" +
             $"ATK {pd.baseAtk}\n" +
             $"DEF {pd.baseDef}\n" +
             $"SPD {pd.baseSpd}\n" +
             $"CR {(pd.baseCr * 100f):0.#}%\n" +
             $"CD {pd.baseCd:0.00}x";
+
+        UpdatePortrait(pd);
+    }
+
+    private void UpdatePortrait(GameSession.PlayerData pd)
+    {
+        if (portraitImage == null) return;
+
+        Sprite sp = null;
+        if (pd != null) sp = pd.codexPortrait; 
+
+        if (sp == null) sp = defaultPortrait;
+
+        portraitImage.sprite = sp;
+        portraitImage.enabled = (sp != null);
+        portraitImage.preserveAspect = true;
+    }
+
+    private void CycleNextPlayer()
+    {
+        if (GameSession.I == null) return;
+
+        GameSession.I.EnsurePartySize(1);
+
+        int count = (GameSession.I.party != null) ? GameSession.I.party.Count : 0;
+        if (count <= 1) return;
+
+        int cur = Mathf.Clamp(GameSession.I.activePlayerIndex, 0, count - 1);
+
+        // 最多尝试 count 次，避免死循环
+        for (int step = 1; step <= count; step++)
+        {
+            int next = (cur + step) % count;
+            var pd = GameSession.I.party[next];
+
+            if (cycleUnlockedOnly && pd != null && !pd.unlocked)
+                continue;
+
+            GameSession.I.SetActivePlayerIndex(next); // 这里会触发 OnActivePlayerChanged :contentReference[oaicite:4]{index=4}
+            return;
+        }
     }
 }
