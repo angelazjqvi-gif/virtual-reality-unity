@@ -2612,6 +2612,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1402941540}
     - target: {fileID: 5828213292832789084, guid: b659401ec4e71e0428098cd2c2c51832, type: 3}
+      propertyPath: spd
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 5828213292832789084, guid: b659401ec4e71e0428098cd2c2c51832, type: 3}
       propertyPath: isSmallBoss
       value: 1
       objectReference: {fileID: 0}
