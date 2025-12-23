@@ -73,8 +73,8 @@ public class DialogManager : MonoBehaviour
     {
         if (sprites != null && sprites.Count >= 2)
         {
-            imageDic["张舒然"] = sprites[0];
-            imageDic["普通细胞"] = sprites[1];
+            imageDic["玩家"] = sprites[0];
+            imageDic["白细胞"] = sprites[1];
         }
         else
         {
