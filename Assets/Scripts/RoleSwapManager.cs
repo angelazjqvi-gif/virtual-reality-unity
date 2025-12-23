@@ -15,10 +15,9 @@ public class RoleSwapManager : MonoBehaviour
     public bool keepSameRotation = true;
 
     private int currentIndex = 0;
-    // ✅切换事件：给可视化/HUD用
     public Action<int, GameObject> OnRoleSwapped;
 
-    // ✅给外部读当前index（可选）
+    
     public int CurrentIndex => currentIndex;
 
     void SyncToGameSessionAndHUD()
@@ -71,15 +70,26 @@ public class RoleSwapManager : MonoBehaviour
 
         GameObject current = playerObjects[currentIndex];
         int nextIndex = (currentIndex + 1) % playerObjects.Length;
+        if (GameSession.I != null && GameSession.I.party != null)
+        {
+            int guard = 0;
+            while (guard < playerObjects.Length)
+            {
+                bool inRange = nextIndex >= 0 && nextIndex < GameSession.I.party.Count;
+                bool unlocked = inRange && GameSession.I.party[nextIndex].unlocked;
+                if (unlocked) break;
+
+                nextIndex = (nextIndex + 1) % playerObjects.Length;
+                guard++;
+            }
+        }
         GameObject next = playerObjects[nextIndex];
 
         if (current == null || next == null) return;
 
-        // 记录当前角色的位置/朝向（让新角色“在原地上场”）
         Vector3 pos = current.transform.position;
         Quaternion rot = current.transform.rotation;
 
-        // 下场
         current.SetActive(false);
 
         // 上场

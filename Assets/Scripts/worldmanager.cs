@@ -27,6 +27,8 @@ public class WorldManager : MonoBehaviour
                 {
                     if (worldPlayers[i] != null)
                         GameSession.I.ApplyToWorldPlayer(worldPlayers[i], i);
+                        var pd = GameSession.I.party[i];
+                        worldPlayers[i].gameObject.SetActive(pd.unlocked);
                 }
             }
         WorldSpawnPoint spawnTarget = null;
@@ -97,6 +99,8 @@ public class WorldManager : MonoBehaviour
             {
                 if (worldPlayers[i] != null)
                     GameSession.I.ApplyToWorldPlayer(worldPlayers[i], i);
+                    var pd = GameSession.I.party[i];
+                    worldPlayers[i].gameObject.SetActive(pd.unlocked);
             }
         }
         else

@@ -12,7 +12,7 @@ public class GameSession : MonoBehaviour
     public bool playerLost = false;
 
     [Header("Battle Reward From World")]
-    public int expPerEnemy = 5;
+    public int expPerEnemy = 5; 
 
 
     void Awake()
@@ -75,6 +75,9 @@ public class GameSession : MonoBehaviour
         [Header("Runtime")]
         public int currentHp = 30;
         public bool inited = false;
+
+        [Header("Unlock")]
+        public bool unlocked = true; 
     }
 
     [Header("Party (Multi Players)")]
@@ -289,4 +292,17 @@ public class GameSession : MonoBehaviour
             if (p != null && p.PropertyType == typeof(float) && p.CanWrite) { p.SetValue(obj, value); return; }
         }
     }
+
+    public void UnlockPartyMember(int index)
+    {
+        EnsurePartySize(index + 1);
+        party[index].unlocked = true;
+
+        if (!party[index].inited)
+        {
+            party[index].currentHp = party[index].baseMaxHp;
+            party[index].inited = true;
+        }
+    }
+
 }
