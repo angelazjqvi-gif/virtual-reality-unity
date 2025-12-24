@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 8668135069893501973}
   - component: {fileID: 4237138667742226430}
   m_Layer: 0
-  m_Name: "\u5927boss"
+  m_Name: "\u589E\u6B96\u764C\u7EC6\u80DE"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -138,8 +138,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isPlayer: 0
-  maxHp: 80
-  hp: 80
+  maxHp: 180
+  hp: 180
   atk: 50
   def: 0
   spd: 40
