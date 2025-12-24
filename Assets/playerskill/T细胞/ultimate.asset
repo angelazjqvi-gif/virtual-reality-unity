@@ -24,15 +24,15 @@ MonoBehaviour:
   energyCost: 100
   animType: 2
   effects:
-  - type: 1
+  - type: 2
     valueFlat: 0
     valueAtkRatio: 1
     canCrit: 0
     ignoreDef: 0
-    stat: 0
+    stat: 1
     flat: 0
-    percent: 0
-    durationTurns: 0
+    percent: 1
+    durationTurns: 10
     pullMode: 0
     includeCasterInAlliesPull: 0
     summonPrefab: {fileID: 0}
@@ -44,9 +44,9 @@ MonoBehaviour:
     valueAtkRatio: 1
     canCrit: 0
     ignoreDef: 0
-    stat: 1
+    stat: 3
     flat: 0
-    percent: 0.2
+    percent: 1
     durationTurns: 10
     pullMode: 0
     includeCasterInAlliesPull: 0

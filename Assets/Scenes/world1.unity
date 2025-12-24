@@ -1337,8 +1337,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   codexPanel: {fileID: 1384310025}
+  titleText: {fileID: 0}
   infoText: {fileID: 869949158}
   closeButton: {fileID: 0}
+  portraitImage: {fileID: 0}
+  defaultPortrait: {fileID: 0}
+  cycleUnlockedOnly: 1
   toggleKey: 99
 --- !u!4 &883859655
 Transform:

@@ -18,21 +18,36 @@ MonoBehaviour:
   requireManualSelect: 1
   includeSelfWhenAlliesAll: 1
   allowCutInWhenEnergyFull: 0
-  targetSide: 0
+  targetSide: 1
   targetScope: 0
   defaultTargetRule: 0
   energyCost: 0
   animType: 1
   effects:
-  - type: 0
+  - type: 2
     valueFlat: 0
-    valueAtkRatio: 0.4
+    valueAtkRatio: 0
     canCrit: 0
     ignoreDef: 0
-    stat: 0
+    stat: 3
     flat: 0
-    percent: 0
-    durationTurns: 0
+    percent: 0.5
+    durationTurns: 5
+    pullMode: 0
+    includeCasterInAlliesPull: 0
+    summonPrefab: {fileID: 0}
+    summonCount: 0
+    spawnRule: 0
+    joinTurnQueue: 0
+  - type: 1
+    valueFlat: 10
+    valueAtkRatio: 0
+    canCrit: 0
+    ignoreDef: 0
+    stat: 3
+    flat: 0
+    percent: 1
+    durationTurns: 5
     pullMode: 0
     includeCasterInAlliesPull: 0
     summonPrefab: {fileID: 0}

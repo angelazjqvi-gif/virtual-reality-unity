@@ -136,6 +136,11 @@ private int summonSpawnCursor = 0;
     public Vector3 targetArrowWorldOffset = new Vector3(0f, 1.2f, 0f);
     public Vector3 allyTargetArrowWorldOffset = new Vector3(0f, 1.2f, 0f);
     public bool allowClickToSelectEnemy = true;
+    [Tooltip("Allow mouse click to change ally target when a single-target ally skill is active.")]
+    public bool allowClickToSelectAlly = true;
+
+    [Tooltip("Fallback radius (world units) used when allies have no collider or a click hits a non-unit collider.")]
+    public float clickSelectRadius = 0.75f;
 
     // ---------------------
     // Popup queue (per target)
@@ -344,6 +349,7 @@ private int queueIndex = 0;
             busyTimer = 0f;
         }
 
+        TryMouseSelectAlly();
         TryMouseSelectEnemy();
         UpdateTargetArrowDuringPlayerInput();
         UpdateAllyTargetArrowDuringPlayerInput();
@@ -854,7 +860,6 @@ void UpdateAllyTargetArrowPosition()
     {
         var s = GetCurrentPlayerInputSkill();
         if (s == null) return false;
-        if (!s.requireManualSelect) return false;
         if (s.targetSide != SkillData.TargetSide.Allies) return false;
         if (s.targetScope != SkillData.TargetScope.Single) return false;
         return true;
@@ -1083,17 +1088,82 @@ void UpdateAllyTargetArrowDuringPlayerInput()
         if (worldCamera == null) return;
 
         Vector2 worldPos = worldCamera.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
 
-        if (hit.collider == null) return;
+        // Use RaycastAll so UI/effect colliders (e.g., arrows/FX) won't block unit selection.
+        RaycastHit2D[] hits = Physics2D.RaycastAll(worldPos, Vector2.zero);
+        BattleUnit u = null;
+        if (hits != null && hits.Length > 0)
+        {
+            for (int i = 0; i < hits.Length; i++)
+            {
+                if (hits[i].collider == null) continue;
+                var cand = hits[i].collider.GetComponentInParent<BattleUnit>();
+                if (cand == null) continue;
+                if (cand.isPlayer) continue;
+                if (!IsAlive(cand)) continue;
+                u = cand;
+                break;
+            }
+        }
 
-        BattleUnit u = hit.collider.GetComponentInParent<BattleUnit>();
         if (u == null) return;
-
-        if (u.isPlayer) return;
-        if (!IsAlive(u)) return;
-
         SelectEnemyTarget(u);
+    }
+
+    void TryMouseSelectAlly()
+    {
+        if (!allowClickToSelectAlly) return;
+        if (state != TurnState.WaitingInput) return;
+        if (currentActor == null || !currentActor.isPlayer) return;
+        if (!CanSelectAllyNow()) return;
+
+        if (!Input.GetMouseButtonDown(0)) return;
+        if (worldCamera == null) worldCamera = Camera.main;
+        if (worldCamera == null) return;
+
+        Vector2 worldPos = worldCamera.ScreenToWorldPoint(Input.mousePosition);
+
+        // Primary path: physics hit.
+        RaycastHit2D[] hits = Physics2D.RaycastAll(worldPos, Vector2.zero);
+        BattleUnit u = null;
+        if (hits != null && hits.Length > 0)
+        {
+            for (int i = 0; i < hits.Length; i++)
+            {
+                if (hits[i].collider == null) continue;
+                var cand = hits[i].collider.GetComponentInParent<BattleUnit>();
+                if (cand == null) continue;
+                if (!cand.isPlayer) continue;
+                if (!IsAlive(cand)) continue;
+                u = cand;
+                break;
+            }
+        }
+
+        // Fallback: some ally sprites might have no collider or the click might hit a non-unit collider.
+        // In that case, pick the nearest alive ally within a small radius.
+        if (u == null)
+        {
+            float r2 = Mathf.Max(0.05f, clickSelectRadius) * Mathf.Max(0.05f, clickSelectRadius);
+            var pool = GetAliveAlliesOf(currentActor);
+            float best = float.MaxValue;
+            BattleUnit bestU = null;
+            for (int i = 0; i < pool.Count; i++)
+            {
+                var cand = pool[i];
+                if (cand == null || !IsAlive(cand) || !cand.isPlayer) continue;
+                float d2 = (cand.transform.position - (Vector3)worldPos).sqrMagnitude;
+                if (d2 <= r2 && d2 < best)
+                {
+                    best = d2;
+                    bestU = cand;
+                }
+            }
+            u = bestU;
+        }
+
+        if (u == null) return;
+        SelectAllyTarget(u);
     }
 
     void EnsureActiveAura()
@@ -2833,21 +2903,18 @@ void RequestCutInUltimate(BattleUnit caster, SkillData skill)
         // Single target
         BattleUnit picked = null;
 
-        if (skill.requireManualSelect)
+        // Selection logic:
+        // - Allies: always honor selectedAllyTarget when valid, so single-target ally skills can switch by clicking.
+        // - Enemies: honor selectedEnemyTarget only when the skill explicitly requires manual selection.
+        if (skill.targetSide == SkillData.TargetSide.Allies)
         {
-            // Minimal selection logic:
-            // - Allies: use selectedAllyTarget if valid
-            // - Enemies: use selectedEnemyTarget if valid
-            if (skill.targetSide == SkillData.TargetSide.Allies)
-            {
-                if (selectedAllyTarget != null && IsAlive(selectedAllyTarget) && selectedAllyTarget.isPlayer == caster.isPlayer)
-                    picked = selectedAllyTarget;
-            }
-            else
-            {
-                if (selectedEnemyTarget != null && IsAlive(selectedEnemyTarget) && selectedEnemyTarget.isPlayer != caster.isPlayer)
-                    picked = selectedEnemyTarget;
-            }
+            if (selectedAllyTarget != null && IsAlive(selectedAllyTarget) && selectedAllyTarget.isPlayer == caster.isPlayer)
+                picked = selectedAllyTarget;
+        }
+        else if (skill.requireManualSelect)
+        {
+            if (selectedEnemyTarget != null && IsAlive(selectedEnemyTarget) && selectedEnemyTarget.isPlayer != caster.isPlayer)
+                picked = selectedEnemyTarget;
         }
 
         if (picked == null)
