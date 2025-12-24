@@ -692,8 +692,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u4EBA\u7269\u540D\u79F0"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: bb88372bbc284964194814b30d379138, type: 2}
-  m_sharedMaterial: {fileID: 2992024557656932155, guid: bb88372bbc284964194814b30d379138, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e63a308bdf46515449c1681f6b9a7390, type: 2}
+  m_sharedMaterial: {fileID: -6385650992118889285, guid: e63a308bdf46515449c1681f6b9a7390, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1107,8 +1107,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u4EBA\u7269\u540D\u79F0"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: acb5aae466fe0b24ebad08b51316be89, type: 2}
-  m_sharedMaterial: {fileID: 7329569376626367182, guid: acb5aae466fe0b24ebad08b51316be89, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e63a308bdf46515449c1681f6b9a7390, type: 2}
+  m_sharedMaterial: {fileID: -6385650992118889285, guid: e63a308bdf46515449c1681f6b9a7390, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1491,8 +1491,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\u7EE7\u7EED"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: bb88372bbc284964194814b30d379138, type: 2}
-  m_sharedMaterial: {fileID: 2992024557656932155, guid: bb88372bbc284964194814b30d379138, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e63a308bdf46515449c1681f6b9a7390, type: 2}
+  m_sharedMaterial: {fileID: -6385650992118889285, guid: e63a308bdf46515449c1681f6b9a7390, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1639,6 +1639,10 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: sprites.Array.data[0]
       value: 
       objectReference: {fileID: 21300000, guid: ee5e81740ef1e49eea9415dfe1c9965f, type: 3}
@@ -1675,6 +1679,30 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[0].who
+      value: "\u73A9\u5BB6"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[1].who
+      value: "\u767D\u7EC6\u80DE"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[2].who
+      value: "\u7EA2\u7EC6\u80DE"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[3].who
+      value: "\u8096\u5C27\u5BFC\u5E08"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[4].who
+      value: "\u91D1\u679D\u5BFC\u5E08"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[5].who
+      value: "\u5DE8\u566C\u7EC6\u80DE"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: bodyEntries.Array.data[0].who
       value: "\u73A9\u5BB6"
       objectReference: {fileID: 0}
@@ -1702,6 +1730,30 @@ PrefabInstance:
       propertyPath: bodyEntries.Array.data[6].who
       value: "\u91D1\u679D\u5BFC\u5E08"
       objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[0].sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: ee5e81740ef1e49eea9415dfe1c9965f, type: 3}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[1].sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 9e80e4525d2824bfe85260917d278f86, type: 3}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[2].sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: e09030df784d6479e952651e8e2a6b7f, type: 3}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[3].sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 5a7035fe5851f4958bda7c046cf13823, type: 3}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[4].sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: c9b13eb0d493f4c07a15256068c1b4e5, type: 3}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: characters.Array.data[5].sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 74b2544bee4f54041b21b1b4fec17990, type: 3}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: bodyEntries.Array.data[0].sprite
       value: 
