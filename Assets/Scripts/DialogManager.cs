@@ -3,25 +3,38 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-
-
 public class DialogManager : MonoBehaviour
 {
     [Header("Data")]
     public TextAsset dialogDataFile;
 
-    [Header("Sprites (SpriteRenderer)")]
-    public SpriteRenderer spriteLeft;
-    public SpriteRenderer spriteRight;
-
     [Header("UI Text")]
     public TMP_Text nameText;
     public TMP_Text dialogText;
 
-    [Header("Character Sprites")]
-    public List<Sprite> sprites = new List<Sprite>(); 
-    private readonly System.Collections.Generic.Dictionary<string, Sprite> imageDic =
-        new System.Collections.Generic.Dictionary<string, Sprite>();
+    // ===================== 可扩展：舞台槽位（任意数量） =====================
+    [System.Serializable]
+    public class StageSlot
+    {
+        public string posKey;              // CSV 的 position 列写这个
+        public SpriteRenderer renderer;    // 对应的 SpriteRenderer
+    }
+
+    [Header("Stage Slots (SpriteRenderer)")]
+    public List<StageSlot> slots = new List<StageSlot>();
+    private readonly Dictionary<string, SpriteRenderer> slotDic = new Dictionary<string, SpriteRenderer>();
+
+    // ===================== 可扩展：角色默认立绘（任意数量） =====================
+    [System.Serializable]
+    public class CharacterEntry
+    {
+        public string who;     // CSV 的名字
+        public Sprite sprite;  // 默认立绘
+    }
+
+    [Header("Characters (Default Sprite)")]
+    public List<CharacterEntry> characters = new List<CharacterEntry>();
+    private readonly Dictionary<string, Sprite> imageDic = new Dictionary<string, Sprite>();
 
     [Header("Flow")]
     public int dialogIndex = 0;
@@ -31,21 +44,21 @@ public class DialogManager : MonoBehaviour
     public Button next;
 
     [Header("Options")]
-    public GameObject optionButton;   
-    public Transform buttonGroup;     
+    public GameObject optionButton;
+    public Transform buttonGroup;
 
     [Header("Speaker Highlight")]
-    [Range(0f, 1f)] public float dimAlpha = 0.35f; // 另一边半透明
-    public float brightAlpha = 1f;                 // 说话者亮度
-    
+    [Range(0f, 1f)] public float dimAlpha = 0.35f;
+    public float brightAlpha = 1f;
+
     [System.Serializable]
     public class PortraitEntry
     {
-        public string who;            
-        public string expression;     
-        public Sprite sprite;         
+        public string who;
+        public string expression;
+        public Sprite sprite;
     }
-    
+
     [System.Serializable]
     public class BodyEntry
     {
@@ -56,60 +69,78 @@ public class DialogManager : MonoBehaviour
 
     [Header("Body Expression (SpriteRenderer)")]
     public List<BodyEntry> bodyEntries = new List<BodyEntry>();
-
     private readonly Dictionary<string, Sprite> bodyDic = new Dictionary<string, Sprite>();
     private string BodyKey(string who, string exp) => (who ?? "") + "|" + (exp ?? "");
 
-
     [Header("Portrait")]
-    public Image portraitImage;                       
+    public Image portraitImage;
     public List<PortraitEntry> portraitEntries = new List<PortraitEntry>();
-
     private readonly Dictionary<string, Sprite> portraitDic = new Dictionary<string, Sprite>();
-    
     private string PortraitKey(string who, string exp) => (who ?? "") + "|" + (exp ?? "");
+
+    private string Clean(string s) => (s ?? "").Trim().Trim('\uFEFF');
 
     private void Awake()
     {
-        if (sprites != null && sprites.Count >= 2)
+        // 槽位表
+        slotDic.Clear();
+        if (slots != null)
         {
-            imageDic["玩家"] = sprites[0];
-            imageDic["白细胞"] = sprites[1];
-        }
-        else
-        {
-            Debug.LogWarning("sprites 列表数量不足（至少2个）。请在 Inspector 给 sprites 拖入两张角色立绘。");
+            foreach (var s in slots)
+            {
+                if (s == null) continue;
+                if (string.IsNullOrEmpty(s.posKey)) continue;
+                if (s.renderer == null) continue;
+                string key = Clean(s.posKey);
+                if (!slotDic.ContainsKey(key))
+                    slotDic.Add(key, s.renderer);
+            }
         }
 
+        // 角色表
+        imageDic.Clear();
+        if (characters != null)
+        {
+            foreach (var c in characters)
+            {
+                if (c == null) continue;
+                if (string.IsNullOrEmpty(c.who)) continue;
+                if (c.sprite == null) continue;
+                string key = Clean(c.who);
+                if (!imageDic.ContainsKey(key))
+                    imageDic.Add(key, c.sprite);
+            }
+        }
+
+        // 头像表
         portraitDic.Clear();
         if (portraitEntries != null)
         {
-            for (int i = 0; i < portraitEntries.Count; i++)
+            foreach (var e in portraitEntries)
             {
-                var e = portraitEntries[i];
                 if (e == null) continue;
                 if (string.IsNullOrEmpty(e.who)) continue;
                 if (string.IsNullOrEmpty(e.expression)) continue;
                 if (e.sprite == null) continue;
 
-                string key = PortraitKey(e.who.Trim(), e.expression.Trim());
+                string key = PortraitKey(Clean(e.who), Clean(e.expression));
                 if (!portraitDic.ContainsKey(key))
                     portraitDic.Add(key, e.sprite);
             }
         }
 
+        // 身体表
         bodyDic.Clear();
         if (bodyEntries != null)
         {
-            for (int i = 0; i < bodyEntries.Count; i++)
+            foreach (var e in bodyEntries)
             {
-                var e = bodyEntries[i];
                 if (e == null) continue;
                 if (string.IsNullOrEmpty(e.who)) continue;
                 if (string.IsNullOrEmpty(e.expression)) continue;
                 if (e.sprite == null) continue;
 
-                string key = BodyKey(e.who.Trim().Trim('\uFEFF'), e.expression.Trim().Trim('\uFEFF'));
+                string key = BodyKey(Clean(e.who), Clean(e.expression));
                 if (!bodyDic.ContainsKey(key))
                     bodyDic.Add(key, e.sprite);
             }
@@ -120,15 +151,13 @@ public class DialogManager : MonoBehaviour
     {
         ReadText(dialogDataFile);
 
-        
         ClearOptions();
         if (buttonGroup != null) buttonGroup.gameObject.SetActive(false);
 
-        
-        if (spriteLeft != null)  { spriteLeft.gameObject.SetActive(true);  spriteLeft.color = new Color(1,1,1,dimAlpha); }
-        if (spriteRight != null) { spriteRight.gameObject.SetActive(true); spriteRight.color = new Color(1,1,1,dimAlpha); }
+        // 初始都 dim
+        DimAllSlots();
 
-         if (portraitImage != null) portraitImage.gameObject.SetActive(true);
+        if (portraitImage != null) portraitImage.gameObject.SetActive(true);
 
         ShowDialogRow();
     }
@@ -141,17 +170,15 @@ public class DialogManager : MonoBehaviour
             dialogRows = new string[0];
             return;
         }
-
         dialogRows = textAsset.text.Split('\n');
         Debug.Log("读取成功");
     }
 
-    
     private string Cell(string[] cells, int idx)
     {
         if (cells == null) return "";
         if (idx < 0 || idx >= cells.Length) return "";
-        return cells[idx].Replace("\r", "").Trim();
+        return Clean(cells[idx].Replace("\r", ""));
     }
 
     private bool TryCellInt(string[] cells, int idx, out int value)
@@ -159,37 +186,45 @@ public class DialogManager : MonoBehaviour
         return int.TryParse(Cell(cells, idx), out value);
     }
 
-    
     public void UpdateText(string who, string text)
     {
         if (nameText != null) nameText.text = who;
         if (dialogText != null) dialogText.text = text;
     }
-    public void UpdateImage(string who, string position)
+
+    private void DimAllSlots()
     {
-        if (!imageDic.ContainsKey(who)) return;
-
-        if (spriteLeft == null || spriteRight == null) return;
-
-        // 两边都显示
-        spriteLeft.gameObject.SetActive(true);
-        spriteRight.gameObject.SetActive(true);
-
-        // 先统一变暗
-        spriteLeft.color  = new Color(1f, 1f, 1f, dimAlpha);
-        spriteRight.color = new Color(1f, 1f, 1f, dimAlpha);
-
-        // 再高亮说话者那边，并更新该边 sprite
-        if (position == "左")
+        foreach (var kv in slotDic)
         {
-            spriteLeft.sprite = imageDic[who];
-            spriteLeft.color = new Color(1f, 1f, 1f, brightAlpha);
+            var r = kv.Value;
+            if (r == null) continue;
+            r.gameObject.SetActive(true);
+            r.color = new Color(1f, 1f, 1f, dimAlpha);
         }
-        else if (position == "右")
+    }
+
+    // ===================== 核心：按 CSV position 高亮任意槽位 =====================
+    public void UpdateStage(string who, string position)
+    {
+        if (slotDic.Count == 0) return;
+
+        string pos = Clean(position);
+
+        // 1) 永远先 dim，避免继承上一句
+        DimAllSlots();
+
+        // 2) 找槽位并高亮
+        if (!slotDic.TryGetValue(pos, out var target) || target == null)
         {
-            spriteRight.sprite = imageDic[who];
-            spriteRight.color = new Color(1f, 1f, 1f, brightAlpha);
+            Debug.LogWarning($"CSV position='{pos}' 没有对应槽位，请在 slots 里配置该 posKey");
+            return;
         }
+        target.color = new Color(1f, 1f, 1f, brightAlpha);
+
+        // 3) 换图（有就换）
+        string w = Clean(who);
+        if (imageDic.TryGetValue(w, out var sp) && sp != null)
+            target.sprite = sp;
     }
 
     public void UpdatePortrait(string who, string portraitExpression)
@@ -198,36 +233,47 @@ public class DialogManager : MonoBehaviour
 
         portraitImage.gameObject.SetActive(true);
 
-        // portraitExpression 为空时默认 normal
-        string exp = string.IsNullOrEmpty(portraitExpression) ? "normal" : portraitExpression.Trim();
-        string key = PortraitKey((who ?? "").Trim(), exp);
+        string exp = string.IsNullOrEmpty(portraitExpression) ? "normal" : Clean(portraitExpression);
+        string key = PortraitKey(Clean(who), exp);
 
         if (portraitDic.TryGetValue(key, out Sprite sp) && sp != null)
         {
             portraitImage.sprite = sp;
             portraitImage.enabled = true;
         }
-        else
-        {
-            // 找不到就不报错、不清空
-            // portraitImage.sprite = null;
-            // portraitImage.enabled = false;
-        }
     }
-    
+
+    // ✅ Body 也按任意槽位 position 走
+    public void UpdateBodyExpression(string who, string position, string bodyExpression)
+    {
+        string pos = Clean(position);
+        if (!slotDic.TryGetValue(pos, out var target) || target == null) return;
+
+        string w = Clean(who);
+        string exp = string.IsNullOrEmpty(bodyExpression) ? "normal" : Clean(bodyExpression);
+
+        Sprite sp = null;
+        if (!bodyDic.TryGetValue(BodyKey(w, exp), out sp) || sp == null)
+            bodyDic.TryGetValue(BodyKey(w, "normal"), out sp);
+
+        if (sp == null) return;
+
+        target.sprite = sp;
+    }
+
     public void ShowDialogRow()
     {
         if (dialogRows == null || dialogRows.Length == 0) return;
 
         for (int i = 0; i < dialogRows.Length; i++)
         {
-            string row = dialogRows[i].Replace("\r", "").Trim();
+            string row = Clean(dialogRows[i].Replace("\r", ""));
             if (string.IsNullOrEmpty(row)) continue;
 
             string[] cells = row.Split(',');
             string tag = Cell(cells, 0);
 
-            // 普通对白：#,id,name,pos,text,nextId
+            // 普通对白：#,id,name,pos,text,nextId,(6 bodyExp),(7 portraitExp)
             if (tag == "#" && TryCellInt(cells, 1, out int id) && id == dialogIndex)
             {
                 string who = Cell(cells, 2);
@@ -237,31 +283,26 @@ public class DialogManager : MonoBehaviour
                 string portraitExp = Cell(cells, 7);
 
                 UpdateText(who, text);
-                UpdateImage(who, pos);
+                UpdateStage(who, pos);
                 UpdateBodyExpression(who, pos, bodyExp);
                 UpdatePortrait(who, portraitExp);
 
-                
                 if (TryCellInt(cells, 5, out int nextId))
                     dialogIndex = nextId;
 
                 if (next != null) next.gameObject.SetActive(true);
                 if (buttonGroup != null) buttonGroup.gameObject.SetActive(false);
-
                 return;
             }
 
             if (tag == "&" && TryCellInt(cells, 1, out int optId) && optId == dialogIndex)
             {
                 if (next != null) next.gameObject.SetActive(false);
-
                 if (buttonGroup != null) buttonGroup.gameObject.SetActive(true);
                 GenerateOptions(i);
-
                 return;
             }
 
-            // 结束：end,id
             if (tag == "end" && TryCellInt(cells, 1, out int endId) && endId == dialogIndex)
             {
                 Debug.Log("剧情结束");
@@ -287,13 +328,12 @@ public class DialogManager : MonoBehaviour
 
         for (int i = startIndex; i < dialogRows.Length; i++)
         {
-            string row = dialogRows[i].Replace("\r", "").Trim();
+            string row = Clean(dialogRows[i].Replace("\r", ""));
             if (string.IsNullOrEmpty(row)) continue;
 
             string[] cells = row.Split(',');
             string tag = Cell(cells, 0);
-
-            if (tag != "&") break; // 选项段结束
+            if (tag != "&") break;
 
             string optionText = Cell(cells, 4);
             if (string.IsNullOrEmpty(optionText)) continue;
@@ -306,11 +346,9 @@ public class DialogManager : MonoBehaviour
 
             GameObject btnGO = Instantiate(optionButton, buttonGroup);
 
-            // 文本
             TMP_Text t = btnGO.GetComponentInChildren<TMP_Text>();
             if (t != null) t.text = optionText;
 
-            // 点击
             Button b = btnGO.GetComponent<Button>();
             if (b != null)
             {
@@ -326,7 +364,6 @@ public class DialogManager : MonoBehaviour
         ClearOptions();
         if (buttonGroup != null) buttonGroup.gameObject.SetActive(false);
 
-        // 恢复 Next
         if (next != null) next.gameObject.SetActive(true);
 
         dialogIndex = nextId;
@@ -341,41 +378,7 @@ public class DialogManager : MonoBehaviour
     private void ClearOptions()
     {
         if (buttonGroup == null) return;
-
         for (int i = buttonGroup.childCount - 1; i >= 0; i--)
-        {
             Destroy(buttonGroup.GetChild(i).gameObject);
-        }
     }
-
-
-    public void UpdateBodyExpression(string who, string position, string bodyExpression)
-    {
-        if (spriteLeft == null || spriteRight == null) return;
-
-        string w = (who ?? "").Trim().Trim('\uFEFF');
-        string exp = string.IsNullOrEmpty(bodyExpression) ? "normal" : bodyExpression.Trim().Trim('\uFEFF');
-
-        // 1) 先精确匹配 who|exp
-        Sprite sp = null;
-        string key = BodyKey(w, exp);
-        if (!bodyDic.TryGetValue(key, out sp) || sp == null)
-        {
-            // 2) 回退 normal，避免找不到导致沿用上一句
-            string key2 = BodyKey(w, "normal");
-            bodyDic.TryGetValue(key2, out sp);
-        }
-        if (sp == null) return;
-
-        // 只换说话者那一侧的立绘
-        if (position == "左")
-        {
-            spriteLeft.sprite = sp;
-        }
-        else if (position == "右")
-        {
-            spriteRight.sprite = sp;
-        }
-    }
-
 }
