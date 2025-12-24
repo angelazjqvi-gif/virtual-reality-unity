@@ -1631,6 +1631,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 4900000, guid: 00f98695df5dd544c89c81937a0ee6e3, type: 3}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: slots.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: optionButtonPrefab
       value: 
       objectReference: {fileID: 487361907548768514, guid: ceaa2f3c9de5ef6439f198c44b5a4e22, type: 3}
@@ -1679,6 +1683,14 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: slots.Array.data[0].posKey
+      value: "\u5DE6"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: slots.Array.data[1].posKey
+      value: "\u53F3"
+      objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: characters.Array.data[0].who
       value: "\u73A9\u5BB6"
       objectReference: {fileID: 0}
@@ -1702,6 +1714,14 @@ PrefabInstance:
       propertyPath: characters.Array.data[5].who
       value: "\u5DE8\u566C\u7EC6\u80DE"
       objectReference: {fileID: 0}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: slots.Array.data[0].renderer
+      value: 
+      objectReference: {fileID: 803082552}
+    - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
+      propertyPath: slots.Array.data[1].renderer
+      value: 
+      objectReference: {fileID: 732515158}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: bodyEntries.Array.data[0].who
       value: "\u73A9\u5BB6"
