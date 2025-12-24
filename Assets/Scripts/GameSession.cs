@@ -78,6 +78,8 @@ public class GameSession : MonoBehaviour
 
         [Header("Unlock")]
         public bool unlocked = true; 
+
+        public Sprite codexPortrait;
     }
 
     [Header("Party (Multi Players)")]
