@@ -2,6 +2,12 @@
 
 public class AttackEventEmitter : MonoBehaviour
 {
+    void Awake()
+    {
+        if (unit == null) unit = GetComponent<BattleUnit>();
+        if (battleManager == null) battleManager = FindObjectOfType<BattleManager>();
+    }
+
     [Header("Refs")]
     public BattleManager battleManager;
     public BattleUnit unit;

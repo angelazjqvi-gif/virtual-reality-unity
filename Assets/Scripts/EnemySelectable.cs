@@ -8,11 +8,14 @@ public class EnemySelectable : MonoBehaviour
     void Reset()
     {
         unit = GetComponent<BattleUnit>();
+        if (battle == null) battle = FindObjectOfType<BattleManager>();
     }
 
     void OnMouseDown()
     {
-        if (battle == null || unit == null) return;
+        if (unit == null) return;
+        if (battle == null) battle = FindObjectOfType<BattleManager>();
+        if (battle == null) return;
         battle.SelectEnemyTarget(unit);
     }
 }
