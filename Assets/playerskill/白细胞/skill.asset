@@ -28,11 +28,26 @@ MonoBehaviour:
     valueFlat: 0
     valueAtkRatio: 0.5
     canCrit: 0
-    ignoreDef: 0
+    ignoreDef: 1
     stat: 0
     flat: 0
     percent: 0
     durationTurns: 0
+    pullMode: 0
+    includeCasterInAlliesPull: 0
+    summonPrefab: {fileID: 0}
+    summonCount: 0
+    spawnRule: 0
+    joinTurnQueue: 0
+  - type: 2
+    valueFlat: 0
+    valueAtkRatio: 0.5
+    canCrit: 0
+    ignoreDef: 1
+    stat: 0
+    flat: -5
+    percent: 0
+    durationTurns: 10
     pullMode: 0
     includeCasterInAlliesPull: 0
     summonPrefab: {fileID: 0}

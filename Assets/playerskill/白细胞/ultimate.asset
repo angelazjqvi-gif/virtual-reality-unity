@@ -20,7 +20,7 @@ MonoBehaviour:
   allowCutInWhenEnergyFull: 1
   targetSide: 0
   targetScope: 1
-  defaultTargetRule: 0
+  defaultTargetRule: 2
   energyCost: 100
   animType: 2
   effects:
@@ -35,6 +35,51 @@ MonoBehaviour:
     durationTurns: 0
     pullMode: 0
     includeCasterInAlliesPull: 0
+    summonPrefab: {fileID: 0}
+    summonCount: 0
+    spawnRule: 0
+    joinTurnQueue: 0
+  - type: 3
+    valueFlat: 0
+    valueAtkRatio: 0.6
+    canCrit: 1
+    ignoreDef: 1
+    stat: 0
+    flat: 0
+    percent: 0
+    durationTurns: 0
+    pullMode: 3
+    includeCasterInAlliesPull: 0
+    summonPrefab: {fileID: 0}
+    summonCount: 0
+    spawnRule: 0
+    joinTurnQueue: 0
+  - type: 2
+    valueFlat: 0
+    valueAtkRatio: 0.6
+    canCrit: 1
+    ignoreDef: 1
+    stat: 1
+    flat: -5
+    percent: 0
+    durationTurns: 0
+    pullMode: 3
+    includeCasterInAlliesPull: 1
+    summonPrefab: {fileID: 0}
+    summonCount: 0
+    spawnRule: 0
+    joinTurnQueue: 0
+  - type: 3
+    valueFlat: 0
+    valueAtkRatio: 0.6
+    canCrit: 1
+    ignoreDef: 1
+    stat: 1
+    flat: -5
+    percent: 0
+    durationTurns: 0
+    pullMode: 3
+    includeCasterInAlliesPull: 1
     summonPrefab: {fileID: 0}
     summonCount: 0
     spawnRule: 0

@@ -48,7 +48,7 @@ MonoBehaviour:
     flat: 0
     percent: 1
     durationTurns: 10
-    pullMode: 0
+    pullMode: 2
     includeCasterInAlliesPull: 0
     summonPrefab: {fileID: 0}
     summonCount: 0
