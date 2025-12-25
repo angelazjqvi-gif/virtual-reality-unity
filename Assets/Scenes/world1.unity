@@ -1115,7 +1115,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3626916397498700004, guid: e07f8306357ec344496eb676ec042896, type: 3}
       propertyPath: m_SortingOrder
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7878350319992209165, guid: e07f8306357ec344496eb676ec042896, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2547,7 +2547,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4479250970611138146, guid: 2a98d63a194096b4ea6fd7d0231cbf7d, type: 3}
       propertyPath: battleSceneName
-      value: battle1
+      value: battle 1
       objectReference: {fileID: 0}
     - target: {fileID: 5029170334833016121, guid: 2a98d63a194096b4ea6fd7d0231cbf7d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2608,11 +2608,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1550058907166420889, guid: 3d2dc8c5e3b48134a8df4bfb3ae9d297, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.82
+      value: -1.33
       objectReference: {fileID: 0}
     - target: {fileID: 1550058907166420889, guid: 3d2dc8c5e3b48134a8df4bfb3ae9d297, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.01
+      value: -1.13
       objectReference: {fileID: 0}
     - target: {fileID: 1550058907166420889, guid: 3d2dc8c5e3b48134a8df4bfb3ae9d297, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2773,11 +2773,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
       propertyPath: party.Array.data[0].baseMaxHp
-      value: 0
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
       propertyPath: party.Array.data[0].currentHp
-      value: 0
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1687807088495109825, guid: a2dc3eab208fa314a8fa4cd4c9aa7803, type: 3}
       propertyPath: party.Array.data[1].baseMaxHp
