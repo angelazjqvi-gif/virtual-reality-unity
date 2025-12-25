@@ -1564,7 +1564,7 @@ MonoBehaviour:
   atk: 10
   def: 1
   spd: 10
-  cr: 0.1
+  cr: 0.195
   cd: 1.5
   er: 0
   skillData: {fileID: 0}
@@ -2618,6 +2618,18 @@ PrefabInstance:
     - target: {fileID: 3323814809443607230, guid: 5fc6e405a16dd2540ae6cac5f9452b75, type: 3}
       propertyPath: m_SortingOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4402069019565507361, guid: 5fc6e405a16dd2540ae6cac5f9452b75, type: 3}
+      propertyPath: m_Color.b
+      value: 0.82938194
+      objectReference: {fileID: 0}
+    - target: {fileID: 4402069019565507361, guid: 5fc6e405a16dd2540ae6cac5f9452b75, type: 3}
+      propertyPath: m_Color.g
+      value: 0.94509804
+      objectReference: {fileID: 0}
+    - target: {fileID: 4402069019565507361, guid: 5fc6e405a16dd2540ae6cac5f9452b75, type: 3}
+      propertyPath: m_Color.r
+      value: 0.05098039
       objectReference: {fileID: 0}
     - target: {fileID: 6131144675635809497, guid: 5fc6e405a16dd2540ae6cac5f9452b75, type: 3}
       propertyPath: m_LocalPosition.x
