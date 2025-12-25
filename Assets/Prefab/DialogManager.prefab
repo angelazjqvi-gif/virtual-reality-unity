@@ -44,20 +44,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10322ca4760bd484494f0bf74764fc45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogDataFile: {fileID: 4900000, guid: f7f95cd01b4f9a744a2bbc55280a4150, type: 3}
-  characters:
-  - characterName: "\u5F20\u8212\u7136"
-    bodySprite: {fileID: 21300000, guid: b325241400cc7d34a8a27ac27301b102, type: 3}
-    portraitSprite: {fileID: 0}
-  - characterName: "\u666E\u901A\u7EC6\u80DE"
-    bodySprite: {fileID: 21300000, guid: 7ffe138d26e3bf0449dea28e9eb65d9d, type: 3}
-    portraitSprite: {fileID: 21300000, guid: 480d0b33f361b7e488f8bf68665f6772, type: 3}
-  imgLeft: {fileID: 0}
-  imgRight: {fileID: 0}
-  portraitImage: {fileID: 0}
+  dialogDataFile: {fileID: 4900000, guid: 00f98695df5dd544c89c81937a0ee6e3, type: 3}
   nameText: {fileID: 0}
   dialogText: {fileID: 0}
-  nextButton: {fileID: 275219198598528239, guid: cbb3c0c8ea6c13845a18b0b906cc644f, type: 3}
-  optionButtonPrefab: {fileID: 0}
+  slots: []
+  characters:
+  - who: 
+    sprite: {fileID: 0}
+  - who: 
+    sprite: {fileID: 0}
+  dialogIndex: 0
+  dialogRows: []
+  next: {fileID: 0}
+  optionButton: {fileID: 0}
   buttonGroup: {fileID: 0}
   dimAlpha: 0.35
+  brightAlpha: 1
+  bodyEntries: []
+  portraitImage: {fileID: 0}
+  portraitEntries: []
