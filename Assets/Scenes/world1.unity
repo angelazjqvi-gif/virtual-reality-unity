@@ -1992,9 +1992,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: "\u7EC6\u80DE\u57CE\u8865"
       objectReference: {fileID: 0}
-    - target: {fileID: 5148798475469360373, guid: a377b20e8f1b4ee40a4ecc77ae723c70, type: 3}
+    - target: {fileID: 2981669257261886299, guid: a377b20e8f1b4ee40a4ecc77ae723c70, type: 3}
       propertyPath: m_SortingOrder
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5148798475469360373, guid: a377b20e8f1b4ee40a4ecc77ae723c70, type: 3}
+      propertyPath: m_SortingOrder
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7477993434696622105, guid: a377b20e8f1b4ee40a4ecc77ae723c70, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2400,7 +2404,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3747660446374413847, guid: 2a98d63a194096b4ea6fd7d0231cbf7d, type: 3}
       propertyPath: m_Name
-      value: world_enemy
+      value: "\u6559\u5B66\u5173\u4F20\u9001\u95E8"
+      objectReference: {fileID: 0}
+    - target: {fileID: 4479250970611138146, guid: 2a98d63a194096b4ea6fd7d0231cbf7d, type: 3}
+      propertyPath: battleSceneName
+      value: battle1
       objectReference: {fileID: 0}
     - target: {fileID: 5029170334833016121, guid: 2a98d63a194096b4ea6fd7d0231cbf7d, type: 3}
       propertyPath: m_LocalPosition.x
