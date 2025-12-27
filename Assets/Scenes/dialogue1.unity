@@ -364,7 +364,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: d7d7460ee51c549ddb48e6b6596dffd4, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b7bd81deab055d5429ebe4e6eb14f14c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -384,8 +384,8 @@ Transform:
   m_GameObject: {fileID: 803082551}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.3573, y: -0.0084, z: 0}
-  m_LocalScale: {x: 1.7230461, y: 2.1516628, z: 1}
+  m_LocalPosition: {x: -4.4061, y: 0.016, z: 0}
+  m_LocalScale: {x: 2.124686, y: 1.7030456, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1692,7 +1692,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: characters.Array.data[0].who
-      value: "\u73A9\u5BB6"
+      value: "T\u7EC6\u80DE\uFF08\u73A9\u5BB6\uFF09"
       objectReference: {fileID: 0}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: characters.Array.data[1].who
@@ -1753,7 +1753,7 @@ PrefabInstance:
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: characters.Array.data[0].sprite
       value: 
-      objectReference: {fileID: 21300000, guid: d7d7460ee51c549ddb48e6b6596dffd4, type: 3}
+      objectReference: {fileID: 21300000, guid: b7bd81deab055d5429ebe4e6eb14f14c, type: 3}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: characters.Array.data[1].sprite
       value: 
@@ -1824,7 +1824,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: portraitEntries.Array.data[5].who
-      value: "\u73A9\u5BB6"
+      value: "T\u7EC6\u80DE\uFF08\u73A9\u5BB6\uFF09"
       objectReference: {fileID: 0}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: portraitEntries.Array.data[6].who
@@ -1885,7 +1885,7 @@ PrefabInstance:
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: portraitEntries.Array.data[5].sprite
       value: 
-      objectReference: {fileID: 21300000, guid: d7d7460ee51c549ddb48e6b6596dffd4, type: 3}
+      objectReference: {fileID: 21300000, guid: b7bd81deab055d5429ebe4e6eb14f14c, type: 3}
     - target: {fileID: 2218748656829226653, guid: 44ecf1443655bf94a905764f2f5d15e7, type: 3}
       propertyPath: portraitEntries.Array.data[6].sprite
       value: 
